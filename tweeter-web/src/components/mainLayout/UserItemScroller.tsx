@@ -23,7 +23,7 @@ const UserItemScroller = (props: Props) => {
   const listener: UserItemView = {
     addItems: (newItems: User[]) =>
       setItems((previousItems) => [...previousItems, ...newItems]),
-    displayErrorMessage: displayErrorMessage,
+    displayErrorMessage: displayErrorMessage
   }; // Observer
 
   const presenterRef = useRef<UserItemPresenter | null>(null)
@@ -58,7 +58,7 @@ const UserItemScroller = (props: Props) => {
   };
 
   const loadMoreItems = async () => {
-    presenterRef.current!.loadMoreItems(authToken!, displayedUser!.alias)
+    presenterRef.current!.loadMoreItems(authToken!, displayedUser!.alias);
   };
 
   return (
