@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import AppNavbar from "../appNavbar/AppNavbar";
 import PostStatus from "../postStatus/PostStatus";
 import UserInfo from "../userInfo/UserInfoComponent";
+import { PostStatusView, PostStatusPresenter } from "../../presenter/PostStatusPresenter";
 
 const MainLayout = () => {
   return (
@@ -16,7 +17,9 @@ const MainLayout = () => {
                 <UserInfo />
               </div>
               <div className="p-3 border mt-1 rounded bg-light">
-                <PostStatus />
+                <PostStatus presenterFactory={(view: PostStatusView) =>
+                              new PostStatusPresenter(view)
+                            }/>
               </div>
             </div>
           </div>
