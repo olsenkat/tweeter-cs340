@@ -1,8 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Post from "./Post";
-import { AuthToken, User, FakeData, Status } from "tweeter-shared";
-import { useMessageActions } from "../toaster/MessageHooks";
-import { useUserInfo, useUserInfoActions } from "../userInfo/UserInfoHooks";
+import { Status } from "tweeter-shared";
 import { useUserNavigation } from "../userInfo/UserNavigationHooks";
 
 interface Props {

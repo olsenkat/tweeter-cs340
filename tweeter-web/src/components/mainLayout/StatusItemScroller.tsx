@@ -1,4 +1,4 @@
-import { AuthToken, FakeData, Status, User } from "tweeter-shared";
+import { Status } from "tweeter-shared";
 import { useState, useEffect, useRef } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useParams } from "react-router-dom";
@@ -26,7 +26,7 @@ const StatusItemScroller = (props: Props) => {
     addItems: (newItems: Status[]) =>
       setItems((previousItems) => [...previousItems, ...newItems]),
     displayErrorMessage: displayErrorMessage
-  }
+  } // Observer
 
   const presenterRef = useRef<StatusItemPresenter | null>(null)
     if (!presenterRef.current) {
