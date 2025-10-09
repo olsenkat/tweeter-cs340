@@ -22,6 +22,7 @@ import { StoryPresenter } from "./presenter/StoryPresenter";
 import { AuthenticationView } from "./presenter/AuthenticationPresenter";
 import { LoginPresenter, LoginView } from "./presenter/LoginPresenter";
 import { RegisterPresenter, RegisterView } from "./presenter/RegisterPresenter";
+import { ToasterPresenter, ToasterView } from "./presenter/ToasterPresenter";
 
 const App = () => {
   const { currentUser, authToken } = useUserInfo();
@@ -32,7 +33,10 @@ const App = () => {
 
   return (
     <div>
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        presenterFactory={(view: ToasterView) => new ToasterPresenter(view)}
+      />
       <BrowserRouter>
         {isAuthenticated() ? (
           <AuthenticatedRoutes />

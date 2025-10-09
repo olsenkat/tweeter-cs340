@@ -2,11 +2,14 @@ import "./PostStatus.css";
 import { useRef, useState } from "react";
 import { useMessageActions } from "../toaster/MessageHooks";
 import { useUserInfo } from "../userInfo/UserInfoHooks";
-import { PostStatusView, PostStatusPresenter } from "../../presenter/PostStatusPresenter";
+import {
+  PostStatusView,
+  PostStatusPresenter,
+} from "../../presenter/PostStatusPresenter";
 
 interface Props {
-    presenterFactory: (view: PostStatusView) => PostStatusPresenter;
-  }
+  presenterFactory: (view: PostStatusView) => PostStatusPresenter;
+}
 
 const PostStatus = (props: Props) => {
   const { displayInfoMessage, displayErrorMessage, deleteMessage } =
@@ -17,28 +20,32 @@ const PostStatus = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const listener: PostStatusView = {
-      displayInfoMessage: displayInfoMessage,
-      displayErrorMessage: displayErrorMessage,
-      deleteMessage: deleteMessage,
-      setIsLoading: setIsLoading,
-      setPost: setPost
-    }; // Observer
+    displayInfoMessage: displayInfoMessage,
+    displayErrorMessage: displayErrorMessage,
+    deleteMessage: deleteMessage,
+    setIsLoading: setIsLoading,
+    setPost: setPost,
+  }; // Observer
 
-  const presenterRef = useRef<PostStatusPresenter | null>(null)
-    if (!presenterRef.current) {
-      presenterRef.current = props.presenterFactory(listener);
-    }
+  const presenterRef = useRef<PostStatusPresenter | null>(null);
+  if (!presenterRef.current) {
+    presenterRef.current = props.presenterFactory(listener);
+  }
 
   const submitPost = async (event: React.MouseEvent) => {
     presenterRef.current!.submitPost(event, post, currentUser, authToken!);
-  }
+  };
 
   const clearPost = (event: React.MouseEvent) => {
     presenterRef.current!.clearPost(event);
   };
 
   const checkButtonStatus: () => boolean = () => {
-    return presenterRef.current!.checkButtonStatus(post, authToken!, currentUser!);;
+    return presenterRef.current!.checkButtonStatus(
+      post,
+      authToken!,
+      currentUser!
+    );
   };
 
   return (

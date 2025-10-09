@@ -1,7 +1,7 @@
 import { AuthToken, Status, FakeData } from "tweeter-shared";
 
 export class StatusService {
-    public async loadMoreFeedItems (
+  public async loadMoreFeedItems(
     authToken: AuthToken,
     userAlias: string,
     pageSize: number,
@@ -9,9 +9,9 @@ export class StatusService {
   ): Promise<[Status[], boolean]> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
-  };
+  }
 
-  public async loadMoreStoryItems (
+  public async loadMoreStoryItems(
     authToken: AuthToken,
     userAlias: string,
     pageSize: number,
@@ -19,9 +19,9 @@ export class StatusService {
   ): Promise<[Status[], boolean]> {
     // TODO: Replace with the result of calling server
     return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
-  };
+  }
 
-  public async postStatus (
+  public async postStatus(
     authToken: AuthToken,
     newStatus: Status
   ): Promise<void> {
@@ -29,5 +29,5 @@ export class StatusService {
     await new Promise((f) => setTimeout(f, 2000));
 
     // TODO: Call the server to post the status
-  };
+  }
 }
