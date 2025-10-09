@@ -2,10 +2,17 @@ import { Link } from "react-router-dom";
 import Post from "./Post";
 import { Status } from "tweeter-shared";
 import { useUserNavigation } from "../userInfo/UserNavigationHooks";
+import {
+  UserNavigationHooksView,
+  UserNavigationHooksPresenter,
+} from "../../presenter/UserNavigationHooksPresenter";
 
 interface Props {
   status: Status;
   featurePath: string;
+  presenterFactory: (
+    view: UserNavigationHooksView
+  ) => UserNavigationHooksPresenter;
 }
 
 const StatusItem = (props: Props) => {
@@ -38,7 +45,13 @@ const StatusItem = (props: Props) => {
             </h2>
             {props.status.formattedDate}
             <br />
-            <Post status={props.status} featurePath={props.featurePath} />
+            <Post
+              status={props.status}
+              featurePath={props.featurePath}
+              presenterFactory={(view: UserNavigationHooksView) =>
+                new UserNavigationHooksPresenter(view)
+              }
+            />
           </div>
         </div>
       </div>

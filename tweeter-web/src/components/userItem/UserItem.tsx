@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { User } from "tweeter-shared";
 import { useUserNavigation } from "../userInfo/UserNavigationHooks";
+import {
+  UserNavigationHooksView,
+  UserNavigationHooksPresenter,
+} from "../../presenter/UserNavigationHooksPresenter";
 
 interface Props {
   user: User;
   featurePath: string;
+  presenterFactory: (
+    view: UserNavigationHooksView
+  ) => UserNavigationHooksPresenter;
 }
 
 const UserItem = (props: Props) => {

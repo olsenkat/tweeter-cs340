@@ -5,7 +5,14 @@ import { useParams } from "react-router-dom";
 import UserItem from "../userItem/UserItem";
 import { useMessageActions } from "../toaster/MessageHooks";
 import { useUserInfo, useUserInfoActions } from "../userInfo/UserInfoHooks";
-import { UserItemPresenter, UserItemView } from "../../presenter/UserItemPresenter";
+import {
+  UserItemPresenter,
+  UserItemView,
+} from "../../presenter/UserItemPresenter";
+import {
+  UserNavigationHooksPresenter,
+  UserNavigationHooksView,
+} from "../../presenter/UserNavigationHooksPresenter";
 
 interface Props {
   featureUrl: string;
@@ -23,13 +30,13 @@ const UserItemScroller = (props: Props) => {
   const listener: UserItemView = {
     addItems: (newItems: User[]) =>
       setItems((previousItems) => [...previousItems, ...newItems]),
-    displayErrorMessage: displayErrorMessage
+    displayErrorMessage: displayErrorMessage,
   }; // Observer
 
-  const presenterRef = useRef<UserItemPresenter | null>(null)
+  const presenterRef = useRef<UserItemPresenter | null>(null);
   if (!presenterRef.current) {
     presenterRef.current = props.presenterFactory(listener);
-  } 
+  }
 
   // Update the displayed user context variable whenever the displayedUser url parameter changes. This allows browser forward and back buttons to work correctly.
   useEffect(() => {
@@ -38,11 +45,13 @@ const UserItemScroller = (props: Props) => {
       displayedUserAliasParam &&
       displayedUserAliasParam != displayedUser!.alias
     ) {
-      presenterRef.current!.getUser(authToken!, displayedUserAliasParam!).then((toUser) => {
-        if (toUser) {
-          setDisplayedUser(toUser);
-        }
-      });
+      presenterRef
+        .current!.getUser(authToken!, displayedUserAliasParam!)
+        .then((toUser) => {
+          if (toUser) {
+            setDisplayedUser(toUser);
+          }
+        });
     }
   }, [displayedUserAliasParam]);
 
@@ -75,7 +84,13 @@ const UserItemScroller = (props: Props) => {
             key={index}
             className="row mb-3 mx-0 px-0 border rounded bg-white"
           >
-            <UserItem user={item} featurePath={props.featureUrl} />
+            <UserItem
+              user={item}
+              featurePath={props.featureUrl}
+              presenterFactory={(view: UserNavigationHooksView) =>
+                new UserNavigationHooksPresenter(view)
+              }
+            />
           </div>
         ))}
       </InfiniteScroll>

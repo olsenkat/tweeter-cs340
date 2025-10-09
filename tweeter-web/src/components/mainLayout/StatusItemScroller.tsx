@@ -5,7 +5,14 @@ import { useParams } from "react-router-dom";
 import StatusItem from "../statusItem/StatusItem";
 import { useMessageActions } from "../toaster/MessageHooks";
 import { useUserInfo, useUserInfoActions } from "../userInfo/UserInfoHooks";
-import { StatusItemPresenter, StatusItemView } from "../../presenter/StatusItemPresenter";
+import {
+  StatusItemPresenter,
+  StatusItemView,
+} from "../../presenter/StatusItemPresenter";
+import {
+  UserNavigationHooksPresenter,
+  UserNavigationHooksView,
+} from "../../presenter/UserNavigationHooksPresenter";
 
 export const PAGE_SIZE = 10;
 
@@ -17,7 +24,7 @@ interface Props {
 const StatusItemScroller = (props: Props) => {
   const { displayErrorMessage } = useMessageActions();
   const [items, setItems] = useState<Status[]>([]);
-  
+
   const { displayedUser, authToken } = useUserInfo();
   const { setDisplayedUser } = useUserInfoActions();
   const { displayedUser: displayedUserAliasParam } = useParams();
@@ -25,13 +32,13 @@ const StatusItemScroller = (props: Props) => {
   const listener: StatusItemView = {
     addItems: (newItems: Status[]) =>
       setItems((previousItems) => [...previousItems, ...newItems]),
-    displayErrorMessage: displayErrorMessage
-  } // Observer
+    displayErrorMessage: displayErrorMessage,
+  }; // Observer
 
-  const presenterRef = useRef<StatusItemPresenter | null>(null)
-    if (!presenterRef.current) {
-      presenterRef.current = props.presenterFactory(listener);
-    } 
+  const presenterRef = useRef<StatusItemPresenter | null>(null);
+  if (!presenterRef.current) {
+    presenterRef.current = props.presenterFactory(listener);
+  }
 
   // Update the displayed user context variable whenever the displayedUser url parameter changes. This allows browser forward and back buttons to work correctly.
   useEffect(() => {
@@ -40,11 +47,13 @@ const StatusItemScroller = (props: Props) => {
       displayedUserAliasParam &&
       displayedUserAliasParam != displayedUser!.alias
     ) {
-      presenterRef.current!.getUser(authToken!, displayedUserAliasParam!).then((toUser) => {
-        if (toUser) {
-          setDisplayedUser(toUser);
-        }
-      });
+      presenterRef
+        .current!.getUser(authToken!, displayedUserAliasParam!)
+        .then((toUser) => {
+          if (toUser) {
+            setDisplayedUser(toUser);
+          }
+        });
     }
   }, [displayedUserAliasParam]);
 
@@ -77,7 +86,13 @@ const StatusItemScroller = (props: Props) => {
             key={index}
             className="row mb-3 mx-0 px-0 border rounded bg-white"
           >
-            <StatusItem status={item} featurePath={props.featureUrl} />
+            <StatusItem
+              status={item}
+              featurePath={props.featureUrl}
+              presenterFactory={(view: UserNavigationHooksView) =>
+                new UserNavigationHooksPresenter(view)
+              }
+            />
           </div>
         ))}
       </InfiniteScroll>
