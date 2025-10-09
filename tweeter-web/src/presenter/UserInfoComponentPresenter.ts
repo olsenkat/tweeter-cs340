@@ -90,8 +90,6 @@ export class UserInfoComponentPresenter {
     authToken: AuthToken,
     displayedUser: User | null
   ): Promise<void> {
-    event.preventDefault();
-
     var followingUserToast = "";
 
     try {
@@ -124,8 +122,6 @@ export class UserInfoComponentPresenter {
     authToken: AuthToken,
     displayedUser: User | null
   ): Promise<void> {
-    event.preventDefault();
-
     var unfollowingUserToast = "";
 
     try {

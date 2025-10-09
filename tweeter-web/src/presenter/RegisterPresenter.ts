@@ -1,5 +1,6 @@
 import { Buffer } from "buffer";
-import { AuthenticationService } from "../model.service/AuthenticationService";
+// import { AuthenticationService } from "../model.service/AuthenticationService";
+import { UserService } from "../model.service/UserService";
 import {
   AuthenticationPresenter,
   AuthenticationView,
@@ -15,11 +16,11 @@ export class RegisterPresenter extends AuthenticationPresenter<
   RegisterParams,
   RegisterView
 > {
-  private service: AuthenticationService;
+  private service: UserService;
 
   public constructor(view: RegisterView) {
     super(view);
-    this.service = new AuthenticationService();
+    this.service = new UserService();
   }
 
   public async doAuth({

@@ -1,5 +1,6 @@
 // import { useState } from "react";
-import { AuthenticationService } from "../model.service/AuthenticationService";
+// import { AuthenticationService } from "../model.service/AuthenticationService";
+import { UserService } from "../model.service/UserService";
 import {
   AuthenticationPresenter,
   AuthenticationView,
@@ -13,11 +14,11 @@ export class LoginPresenter extends AuthenticationPresenter<
   LoginParams,
   LoginView
 > {
-  private service: AuthenticationService;
+  private service: UserService;
 
   public constructor(view: AuthenticationView) {
     super(view);
-    this.service = new AuthenticationService();
+    this.service = new UserService();
   }
 
   // Do Login

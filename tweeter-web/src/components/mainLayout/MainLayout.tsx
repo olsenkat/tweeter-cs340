@@ -11,11 +11,14 @@ import {
   UserInfoComponentPresenter,
   UserInfoComponentView,
 } from "../../presenter/UserInfoComponentPresenter";
+import { AppNavbarPresenter, AppNavbarView } from "../../presenter/AppNavbarPresenter";
 
 const MainLayout = () => {
   return (
     <>
-      <AppNavbar />
+      <AppNavbar presenterFactory={(view: AppNavbarView) =>
+                      new AppNavbarPresenter(view)
+                    } />
       <div className="container mx-auto px-3 w-100">
         <div className="row gx-4">
           <div className="col-4">
