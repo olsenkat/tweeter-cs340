@@ -1,6 +1,7 @@
 import { User, AuthToken } from "tweeter-shared";
+import { Presenter, View } from "./Presenter";
 
-export interface AuthenticationView {
+export interface AuthenticationView extends View {
   checkSubmitButtonStatus: () => boolean;
   setIsLoading: (isLoading: boolean) => void;
   updateUserInfo: (
@@ -10,21 +11,14 @@ export interface AuthenticationView {
     remember: boolean
   ) => void;
   navigate: (url: string) => void;
-  displayErrorMessage: (message: string) => void;
 }
 
 export abstract class AuthenticationPresenter<
   TParams,
   TView extends AuthenticationView
-> {
-  private _view: TView;
-
+> extends Presenter<TView> {
   protected constructor(view: TView) {
-    this._view = view;
-  }
-
-  protected get view() {
-    return this._view;
+    super(view);
   }
 
   public abstract doAuth(params: TParams): void;

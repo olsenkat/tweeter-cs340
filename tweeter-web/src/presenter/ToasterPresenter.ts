@@ -1,14 +1,13 @@
 import { Toast } from "../components/toaster/Toast";
+import { View, Presenter } from "./Presenter";
 
-export interface ToasterView {
+export interface ToasterView extends View {
   deleteMessage: (messageId: string) => void;
 }
 
-export class ToasterPresenter {
-  private _view: ToasterView;
-
+export class ToasterPresenter extends Presenter<ToasterView> {
   public constructor(view: ToasterView) {
-    this._view = view;
+    super(view);
   }
 
   public deleteExpiredToasts(messageList: Toast[]) {
@@ -19,7 +18,7 @@ export class ToasterPresenter {
         toast.expirationMillisecond > 0 &&
         toast.expirationMillisecond < now
       ) {
-        this._view.deleteMessage(toast.id);
+        this.view.deleteMessage(toast.id);
       }
     }
   }

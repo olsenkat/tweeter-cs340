@@ -1,5 +1,4 @@
 import { Buffer } from "buffer";
-// import { AuthenticationService } from "../model.service/AuthenticationService";
 import { UserService } from "../model.service/UserService";
 import {
   AuthenticationPresenter,
@@ -32,7 +31,7 @@ export class RegisterPresenter extends AuthenticationPresenter<
     imageBytes,
     imageFileExtension,
   }: RegisterParams) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.setIsLoading(true);
 
       const [user, authToken] = await this.service.register(
@@ -46,13 +45,9 @@ export class RegisterPresenter extends AuthenticationPresenter<
 
       this.view.updateUserInfo(user, user, authToken, rememberMe);
       this.view.navigate(`/feed/${user.alias}`);
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to register user because of exception: ${error}`
-      );
-    } finally {
-      this.view.setIsLoading(false);
-    }
+    }, "register user");
+
+    this.view.setIsLoading(false);
   }
 
   public handleImageFile = (file: File | undefined) => {

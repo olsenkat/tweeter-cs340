@@ -28,7 +28,7 @@ export class LoginPresenter extends AuthenticationPresenter<
     rememberMe,
     originalUrl,
   }: LoginParams) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.setIsLoading(true);
 
       const [user, authToken] = await this.service.login(alias, password);
@@ -40,12 +40,7 @@ export class LoginPresenter extends AuthenticationPresenter<
       } else {
         this.view.navigate(`/feed/${user.alias}`);
       }
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to log user in because of exception: ${error}`
-      );
-    } finally {
-      this.view.setIsLoading(false);
-    }
+    }, "log user in");
+    this.view.setIsLoading(false);
   }
 }
