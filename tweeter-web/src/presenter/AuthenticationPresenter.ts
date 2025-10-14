@@ -1,8 +1,9 @@
 import { User, AuthToken } from "tweeter-shared";
 import { Presenter, View } from "./Presenter";
 import { UserService } from "../model.service/UserService";
+import { NavView } from "./NavPresenter";
 
-export interface AuthenticationView extends View {
+export interface AuthenticationView extends NavView {
   checkSubmitButtonStatus: () => boolean;
   setIsLoading: (isLoading: boolean) => void;
   updateUserInfo: (
@@ -11,7 +12,6 @@ export interface AuthenticationView extends View {
     authToken: AuthToken,
     remember: boolean
   ) => void;
-  navigate: (url: string) => void;
 }
 
 export abstract class AuthenticationPresenter<

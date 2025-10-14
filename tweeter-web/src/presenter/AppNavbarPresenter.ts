@@ -1,5 +1,4 @@
 import { AuthToken } from "tweeter-shared";
-import { UserService } from "../model.service/UserService";
 import { NavPresenter, NavView } from "./NavPresenter";
 import { MessageView } from "./Presenter";
 

@@ -1,5 +1,5 @@
 import { UserService } from "../model.service/UserService";
-import { MessageView, Presenter, View } from "./Presenter";
+import { Presenter, View } from "./Presenter";
 
 export interface NavView extends View {
   navigate: (url: string) => void;
