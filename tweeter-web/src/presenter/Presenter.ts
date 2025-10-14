@@ -1,12 +1,9 @@
-import { AuthToken } from "tweeter-shared";
-import { PAGE_SIZE } from "./FolloweePresenter";
-
 export interface View {
   displayErrorMessage: (message: string) => void;
 }
 
 export interface MessageView extends View {
-    displayInfoMessage: (
+  displayInfoMessage: (
     message: string,
     duration: number,
     bootstrapClasses?: string | undefined
@@ -25,7 +22,10 @@ export abstract class Presenter<V extends View> {
     return this._view;
   }
 
-  protected async doFailureReportingOperation(operation: () => Promise<void>, operationDescription: string) {
+  protected async doFailureReportingOperation(
+    operation: () => Promise<void>,
+    operationDescription: string
+  ) {
     try {
       await operation();
     } catch (error) {
