@@ -14,12 +14,12 @@ interface Props {
 
 const Toaster = (props: Props) => {
   const messageList = useMessageList();
-  const { deleteMessage } = useMessageActions();
-  const { displayErrorMessage } = useMessageActions();
+  const { displayInfoMessage, displayErrorMessage, deleteMessage } = useMessageActions();
 
   const listener: ToasterView = {
     deleteMessage: deleteMessage,
     displayErrorMessage: displayErrorMessage,
+    displayInfoMessage: displayInfoMessage
   }; // Observer
 
   const presenterRef = useRef<ToasterPresenter | null>(null);

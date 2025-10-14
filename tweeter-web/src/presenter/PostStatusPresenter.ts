@@ -1,15 +1,8 @@
 import { AuthToken, User, Status } from "tweeter-shared";
 import { StatusService } from "../model.service/StatusService";
-import { Presenter, View } from "./Presenter";
-import PostStatus from "../components/postStatus/PostStatus";
+import { MessageView, Presenter } from "./Presenter";
 
-export interface PostStatusView extends View {
-  displayInfoMessage: (
-    message: string,
-    duration: number,
-    bootstrapClasses?: string | undefined
-  ) => string;
-  deleteMessage: (messageId: string) => void;
+export interface PostStatusView extends MessageView {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setPost: React.Dispatch<React.SetStateAction<string>>;
 }

@@ -5,6 +5,15 @@ export interface View {
   displayErrorMessage: (message: string) => void;
 }
 
+export interface MessageView extends View {
+    displayInfoMessage: (
+    message: string,
+    duration: number,
+    bootstrapClasses?: string | undefined
+  ) => string;
+  deleteMessage: (id: string) => void;
+}
+
 export abstract class Presenter<V extends View> {
   private _view: V;
 

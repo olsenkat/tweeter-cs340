@@ -1,8 +1,8 @@
 import { Toast } from "../components/toaster/Toast";
-import { View, Presenter } from "./Presenter";
+import { Presenter, MessageView } from "./Presenter";
 
-export interface ToasterView extends View {
-  deleteMessage: (messageId: string) => void;
+export interface ToasterView extends MessageView {
+  // No additional methods needed for now
 }
 
 export class ToasterPresenter extends Presenter<ToasterView> {
