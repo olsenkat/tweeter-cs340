@@ -1,20 +1,12 @@
 import { AuthToken, User } from "tweeter-shared";
 import { UserService } from "../model.service/UserService";
-import { Presenter, View } from "./Presenter";
+import { NavPresenter, NavView } from "./NavPresenter";
 
-export interface UserNavigationHooksView extends View{
+export interface UserNavigationHooksView extends NavView{
   setDisplayedUser: (user: User) => void;
-  navigate: (path: string) => void;
 }
 
-export class UserNavigationHooksPresenter extends Presenter<UserNavigationHooksView> {
-  private _service: UserService;
-
-  public constructor(view: UserNavigationHooksView) {
-    super(view);
-    this._service = new UserService();
-  }
-
+export class UserNavigationHooksPresenter extends NavPresenter<UserNavigationHooksView> {
   public async navigateToUser(
     event: React.MouseEvent,
     authToken: AuthToken | null,
@@ -23,9 +15,8 @@ export class UserNavigationHooksPresenter extends Presenter<UserNavigationHooksV
   ): Promise<void> {
     await this.doFailureReportingOperation(async () => {
       const alias = this.extractAlias(event.target.toString());
-
-      const toUser = await this._service.getUser(authToken!, alias);
-
+      const toUser = await this.service.getUser(authToken!, alias);
+      
       if (toUser) {
         if (!toUser.equals(displayedUser!)) {
           this.view.setDisplayedUser(toUser);

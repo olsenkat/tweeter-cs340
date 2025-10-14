@@ -34,9 +34,7 @@ export abstract class AuthenticationPresenter<
     await this.doFailureReportingOperation(async () => {
       this.view.setIsLoading(true);
 
-      // const [user, authToken] = await this.service.login(params.alias, params.password);
       const [user, authToken] = await this.authenticate(params);
-
       this.view.updateUserInfo(user, user, authToken, params.rememberMe);
 
       if (this.navigateOK(params)) {
