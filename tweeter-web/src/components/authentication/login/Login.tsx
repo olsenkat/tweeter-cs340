@@ -44,7 +44,7 @@ const Login = (props: Props) => {
   let loginParams: LoginParams = { alias, password, rememberMe, originalUrl };
 
   const doLogin = async () => {
-    presenterRef.current!.doAuth(loginParams);
+    presenterRef.current!.doAuth(loginParams, "log user in");
   };
 
   const loginOnEnter = (event: React.KeyboardEvent<HTMLElement>) => {

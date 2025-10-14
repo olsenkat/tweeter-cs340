@@ -78,7 +78,7 @@ const Register = (props: Props) => {
   };
 
   const doRegister = async () => {
-    presenterRef.current!.doAuth(registerParams);
+    presenterRef.current!.doAuth(registerParams, "register user");
   };
 
   // File Specific, stays in View

@@ -4,6 +4,7 @@ import {
   AuthenticationPresenter,
   AuthenticationView,
 } from "./AuthenticationPresenter";
+import { AuthToken, User } from "tweeter-shared";
 
 export interface RegisterView extends AuthenticationView {
   setImageBytes: React.Dispatch<React.SetStateAction<Uint8Array>>;
@@ -15,39 +16,41 @@ export class RegisterPresenter extends AuthenticationPresenter<
   RegisterParams,
   RegisterView
 > {
-  private service: UserService;
 
-  public constructor(view: RegisterView) {
-    super(view);
-    this.service = new UserService();
+  // public async doAuth<RegisterParams>({
+  //   params: RegisterParams) {
+  //   await this.doFailureReportingOperation(async () => {
+  //     this.view.setIsLoading(true);
+
+  //     const [user, authToken] = await this.service.register(
+  //       firstName,
+  //       lastName,
+  //       alias,
+  //       password,
+  //       imageBytes,
+  //       imageFileExtension
+  //     );
+
+  //     this.view.updateUserInfo(user, user, authToken, rememberMe);
+  //     this.view.navigate(`/feed/${user.alias}`);
+  //   }, "register user");
+
+  //   this.view.setIsLoading(false);
+  // }
+
+  protected navigateOK(params: RegisterParams): boolean {
+    return true;
   }
 
-  public async doAuth({
-    firstName,
-    lastName,
-    alias,
-    password,
-    rememberMe,
-    imageBytes,
-    imageFileExtension,
-  }: RegisterParams) {
-    await this.doFailureReportingOperation(async () => {
-      this.view.setIsLoading(true);
-
-      const [user, authToken] = await this.service.register(
-        firstName,
-        lastName,
-        alias,
-        password,
-        imageBytes,
-        imageFileExtension
+  protected async authenticate(params: RegisterParams): Promise<[User, AuthToken]> {
+    return this.service.register(
+        params.firstName,
+        params.lastName,
+        params.alias,
+        params.password,
+        params.imageBytes,
+        params.imageFileExtension
       );
-
-      this.view.updateUserInfo(user, user, authToken, rememberMe);
-      this.view.navigate(`/feed/${user.alias}`);
-    }, "register user");
-
-    this.view.setIsLoading(false);
   }
 
   public handleImageFile = (file: File | undefined) => {
