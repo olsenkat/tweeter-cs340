@@ -16,41 +16,21 @@ export class RegisterPresenter extends AuthenticationPresenter<
   RegisterParams,
   RegisterView
 > {
-
-  // public async doAuth<RegisterParams>({
-  //   params: RegisterParams) {
-  //   await this.doFailureReportingOperation(async () => {
-  //     this.view.setIsLoading(true);
-
-  //     const [user, authToken] = await this.service.register(
-  //       firstName,
-  //       lastName,
-  //       alias,
-  //       password,
-  //       imageBytes,
-  //       imageFileExtension
-  //     );
-
-  //     this.view.updateUserInfo(user, user, authToken, rememberMe);
-  //     this.view.navigate(`/feed/${user.alias}`);
-  //   }, "register user");
-
-  //   this.view.setIsLoading(false);
-  // }
-
   protected navigateOK(params: RegisterParams): boolean {
     return true;
   }
 
-  protected async authenticate(params: RegisterParams): Promise<[User, AuthToken]> {
+  protected async authenticate(
+    params: RegisterParams
+  ): Promise<[User, AuthToken]> {
     return this.service.register(
-        params.firstName,
-        params.lastName,
-        params.alias,
-        params.password,
-        params.imageBytes,
-        params.imageFileExtension
-      );
+      params.firstName,
+      params.lastName,
+      params.alias,
+      params.password,
+      params.imageBytes,
+      params.imageFileExtension
+    );
   }
 
   public handleImageFile = (file: File | undefined) => {

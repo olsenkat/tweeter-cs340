@@ -18,7 +18,6 @@ export abstract class AuthenticationPresenter<
   TParams extends AuthParams,
   TView extends AuthenticationView
 > extends Presenter<TView> {
-
   private _service: UserService;
 
   public constructor(view: TView) {

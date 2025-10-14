@@ -9,7 +9,7 @@ interface RegisterParams extends AuthParams {
   lastName: string;
   imageBytes: Uint8Array;
   imageFileExtension: string;
-};
+}
 interface LoginParams extends AuthParams {
   originalUrl?: string;
-};
+}
