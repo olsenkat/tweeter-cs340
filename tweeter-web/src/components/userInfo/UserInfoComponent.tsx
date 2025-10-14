@@ -59,7 +59,7 @@ const UserInfo = (props: Props) => {
     event: React.MouseEvent
   ): Promise<void> => {
     event.preventDefault();
-    presenterRef.current!.followDisplayedUser(event, authToken!, displayedUser);
+    presenterRef.current!.followDisplayedUser(authToken!, displayedUser);
   };
 
   const unfollowDisplayedUser = async (
@@ -67,7 +67,6 @@ const UserInfo = (props: Props) => {
   ): Promise<void> => {
     event.preventDefault();
     presenterRef.current!.unfollowDisplayedUser(
-      event,
       authToken!,
       displayedUser
     );
