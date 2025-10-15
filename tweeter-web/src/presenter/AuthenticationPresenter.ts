@@ -29,7 +29,6 @@ export abstract class AuthenticationPresenter<
     return this._service;
   }
 
-  // public abstract doAuth(params: TParams): void;
   public async doAuth(params: TParams, authString: string): Promise<void> {
     await this.doFailureReportingOperation(async () => {
       this.view.setIsLoading(true);

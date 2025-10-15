@@ -1,3 +1,5 @@
+import { OAuthPresenter } from "../../presenter/OAuthPresenter";
+import { MessageView } from "../../presenter/Presenter";
 import OAuth from "../OAuth/OAuth";
 
 interface Props {
@@ -31,7 +33,9 @@ const AuthenticationFormLayout = (props: Props) => {
           <h1 className="h4 mb-3 fw-normal">Or</h1>
           <h1 className="h5 mb-3 fw-normal">{props.oAuthHeading}</h1>
 
-          <OAuth />
+          <OAuth
+            presenterFactory={(view: MessageView) => new OAuthPresenter(view)}
+          />
 
           <div className="checkbox mb-3">
             <label>

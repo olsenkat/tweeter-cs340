@@ -1,99 +1,70 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useMessageActions } from "../toaster/MessageHooks";
+import { OAuthPresenter } from "../../presenter/OAuthPresenter";
+import { useRef } from "react";
+import { MessageView } from "../../presenter/Presenter";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-const OAuth = () => {
-  const { displayInfoMessage } = useMessageActions();
-  const displayInfoMessageWithDarkBackground = (message: string): void => {
-    displayInfoMessage(message, 3000, "text-white bg-primary");
+type OAuthProvider = "Google" | "Facebook" | "Twitter" | "LinkedIn" | "GitHub";
+
+interface Props {
+  presenterFactory: (view: MessageView) => OAuthPresenter;
+}
+
+const OAuth = (props: Props) => {
+  const { displayInfoMessage, displayErrorMessage, deleteMessage } =
+    useMessageActions();
+
+  const listener: MessageView = {
+    deleteMessage: deleteMessage,
+    displayErrorMessage: displayErrorMessage,
+    displayInfoMessage: displayInfoMessage,
+  }; // Observer
+
+  const presenterRef = useRef<OAuthPresenter | null>(null);
+  if (!presenterRef.current) {
+    presenterRef.current = props.presenterFactory(listener);
+  }
+
+  const OAUTH_FUNCTIONS = {
+    Google: () => presenterRef.current!.handleGoogleClick(),
+    Facebook: () => presenterRef.current!.handleFacebookClick(),
+    Twitter: () => presenterRef.current!.handleTwitterClick(),
+    LinkedIn: () => presenterRef.current!.handleLinkedInClick(),
+    GitHub: () => presenterRef.current!.handleGithubClick(),
   };
 
+  const getBrandIcon = (serviceName: string): IconProp => {
+    return ["fab", serviceName.toLowerCase()] as IconProp;
+  };
+
+  const buttonAction = (
+    serviceName: OAuthProvider,
+    tooltipID: string
+  ): JSX.Element => {
+    return (
+      <button
+        type="button"
+        className="btn btn-link btn-floating mx-1"
+        onClick={() => OAUTH_FUNCTIONS[serviceName]()}
+      >
+        <OverlayTrigger
+          placement="top"
+          overlay={<Tooltip id={tooltipID}>{serviceName}</Tooltip>}
+        >
+          <FontAwesomeIcon icon={getBrandIcon(serviceName)} />
+        </OverlayTrigger>
+      </button>
+    );
+  };
   return (
     <div className="text-center mb-3">
-      <button
-        type="button"
-        className="btn btn-link btn-floating mx-1"
-        onClick={() =>
-          displayInfoMessageWithDarkBackground(
-            "Google registration is not implemented."
-          )
-        }
-      >
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id="googleTooltip">Google</Tooltip>}
-        >
-          <FontAwesomeIcon icon={["fab", "google"]} />
-        </OverlayTrigger>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-link btn-floating mx-1"
-        onClick={() =>
-          displayInfoMessageWithDarkBackground(
-            "Facebook registration is not implemented."
-          )
-        }
-      >
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id="facebookTooltip">Facebook</Tooltip>}
-        >
-          <FontAwesomeIcon icon={["fab", "facebook"]} />
-        </OverlayTrigger>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-link btn-floating mx-1"
-        onClick={() =>
-          displayInfoMessageWithDarkBackground(
-            "Twitter registration is not implemented."
-          )
-        }
-      >
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id="twitterTooltip">Twitter</Tooltip>}
-        >
-          <FontAwesomeIcon icon={["fab", "twitter"]} />
-        </OverlayTrigger>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-link btn-floating mx-1"
-        onClick={() =>
-          displayInfoMessageWithDarkBackground(
-            "LinkedIn registration is not implemented."
-          )
-        }
-      >
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id="linkedInTooltip">LinkedIn</Tooltip>}
-        >
-          <FontAwesomeIcon icon={["fab", "linkedin"]} />
-        </OverlayTrigger>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-link btn-floating mx-1"
-        onClick={() =>
-          displayInfoMessageWithDarkBackground(
-            "Github registration is not implemented."
-          )
-        }
-      >
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id="githubTooltip">GitHub</Tooltip>}
-        >
-          <FontAwesomeIcon icon={["fab", "github"]} />
-        </OverlayTrigger>
-      </button>
+      {buttonAction("Google", "googleTooltip")}
+      {buttonAction("Facebook", "facebookTooltip")}
+      {buttonAction("Twitter", "twitterTooltip")}
+      {buttonAction("LinkedIn", "linkedInTooltip")}
+      {buttonAction("GitHub", "githubTooltip")}
     </div>
   );
 };
