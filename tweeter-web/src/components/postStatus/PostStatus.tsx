@@ -8,7 +8,7 @@ import {
 } from "../../presenter/PostStatusPresenter";
 
 interface Props {
-  presenterFactory: (view: PostStatusView) => PostStatusPresenter;
+  presenter?: PostStatusPresenter;
 }
 
 const PostStatus = (props: Props) => {
@@ -29,8 +29,8 @@ const PostStatus = (props: Props) => {
 
   const presenterRef = useRef<PostStatusPresenter | null>(null);
   if (!presenterRef.current) {
-    presenterRef.current = props.presenterFactory(listener);
-  }
+      presenterRef.current = props.presenter ?? new PostStatusPresenter(listener);
+    }
 
   const submitPost = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -56,6 +56,7 @@ const PostStatus = (props: Props) => {
         <textarea
           className="form-control"
           id="postStatusTextArea"
+          aria-label="postStatusTextArea"
           rows={10}
           placeholder="What's on your mind?"
           value={post}

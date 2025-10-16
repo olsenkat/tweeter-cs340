@@ -11,14 +11,17 @@ import {
   UserInfoComponentPresenter,
   UserInfoComponentView,
 } from "../../presenter/UserInfoComponentPresenter";
-import { AppNavbarPresenter, AppNavbarView } from "../../presenter/AppNavbarPresenter";
+import {
+  AppNavbarPresenter,
+  AppNavbarView,
+} from "../../presenter/AppNavbarPresenter";
 
 const MainLayout = () => {
   return (
     <>
-      <AppNavbar presenterFactory={(view: AppNavbarView) =>
-                      new AppNavbarPresenter(view)
-                    } />
+      <AppNavbar
+        presenterFactory={(view: AppNavbarView) => new AppNavbarPresenter(view)}
+      />
       <div className="container mx-auto px-3 w-100">
         <div className="row gx-4">
           <div className="col-4">
@@ -31,11 +34,7 @@ const MainLayout = () => {
                 />
               </div>
               <div className="p-3 border mt-1 rounded bg-light">
-                <PostStatus
-                  presenterFactory={(view: PostStatusView) =>
-                    new PostStatusPresenter(view)
-                  }
-                />
+                <PostStatus />
               </div>
             </div>
           </div>

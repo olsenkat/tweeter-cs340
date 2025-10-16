@@ -2,6 +2,7 @@ interface AuthParams {
   alias: string;
   password: string;
   rememberMe: boolean;
+  originalUrl?: string;
 }
 
 interface RegisterParams extends AuthParams {
@@ -11,5 +12,5 @@ interface RegisterParams extends AuthParams {
   imageFileExtension: string;
 }
 interface LoginParams extends AuthParams {
-  originalUrl?: string;
+  // originalUrl?: string;
 }

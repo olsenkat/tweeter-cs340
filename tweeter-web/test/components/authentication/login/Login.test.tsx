@@ -1,8 +1,5 @@
 import Login from "../../../../src/components/authentication/login/Login";
-import {
-  LoginView,
-  LoginPresenter,
-} from "../../../../src/presenter/LoginPresenter";
+import { LoginPresenter } from "../../../../src/presenter/LoginPresenter";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { UserEvent, userEvent } from "@testing-library/user-event";

@@ -72,12 +72,14 @@ const Register = (props: Props) => {
     }
   };
 
+  let originalUrl: string = props.originalUrl || "";
   let registerParams: RegisterParams = {
     firstName,
     lastName,
     alias,
     password,
     rememberMe,
+    originalUrl,
     imageBytes,
     imageFileExtension,
   };

@@ -16,7 +16,12 @@ export class RegisterPresenter extends AuthenticationPresenter<
   RegisterView
 > {
   protected navigateOK(params: RegisterParams): boolean {
-    return true;
+    if (!!params.originalUrl) {
+      this.view.navigate(params.originalUrl);
+    } else {
+      return true;
+    }
+    return false;
   }
 
   protected async authenticate(
