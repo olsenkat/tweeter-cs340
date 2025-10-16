@@ -33,11 +33,13 @@ const PostStatus = (props: Props) => {
   }
 
   const submitPost = async (event: React.MouseEvent) => {
-    presenterRef.current!.submitPost(event, post, currentUser, authToken!);
+    event.preventDefault();
+    presenterRef.current!.submitPost(post, currentUser, authToken!);
   };
 
   const clearPost = (event: React.MouseEvent) => {
-    presenterRef.current!.clearPost(event);
+    event.preventDefault();
+    presenterRef.current!.clearPost();
   };
 
   const checkButtonStatus: () => boolean = () => {

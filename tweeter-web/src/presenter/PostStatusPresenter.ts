@@ -8,20 +8,22 @@ export interface PostStatusView extends MessageView {
 }
 
 export class PostStatusPresenter extends Presenter<PostStatusView> {
-  private service: StatusService;
+  private _service: StatusService;
 
   public constructor(view: PostStatusView) {
     super(view);
-    this.service = new StatusService();
+    this._service = new StatusService();
+  }
+
+  public get service() {
+    return this._service;
   }
 
   public async submitPost(
-    event: React.MouseEvent,
     post: string,
     currentUser: User | null,
     authToken: AuthToken
   ) {
-    event.preventDefault();
     var postingStatusToastId = "";
 
     await this.doFailureReportingOperation(async () => {
@@ -43,8 +45,7 @@ export class PostStatusPresenter extends Presenter<PostStatusView> {
     this.view.setIsLoading(false);
   }
 
-  public clearPost(event: React.MouseEvent) {
-    event.preventDefault();
+  public clearPost() {
     this.view.setPost("");
   }
 
