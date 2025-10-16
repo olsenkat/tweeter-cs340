@@ -1,12 +1,25 @@
 import { AuthToken } from "tweeter-shared";
-import { NavPresenter, NavView } from "./NavPresenter";
-import { MessageView } from "./Presenter";
+// import { NavPresenter, NavView } from "./NavPresenter";
+import { MessageView, NavView, Presenter } from "./Presenter";
+import { UserService } from "../model.service/UserService";
 
-export interface AppNavbarView extends NavView, MessageView {
+export interface AppNavbarView extends MessageView {
   clearUserInfo: () => void;
+  navigateToLogin: () => void;
 }
 
-export class AppNavbarPresenter extends NavPresenter<AppNavbarView> {
+export class AppNavbarPresenter extends Presenter<AppNavbarView> {
+  private _service: UserService;
+
+  public constructor(view: AppNavbarView) {
+    super(view);
+    this._service = new UserService();
+  }
+
+  public get service() {
+    return this._service;
+  }
+
   public async logOut(authToken: AuthToken | null) {
     const loggingOutToastId = this.view.displayInfoMessage("Logging Out...", 0);
 
@@ -14,7 +27,7 @@ export class AppNavbarPresenter extends NavPresenter<AppNavbarView> {
       await this.service.logout(authToken!);
       this.view.deleteMessage(loggingOutToastId);
       this.view.clearUserInfo();
-      this.view.navigate("/login");
+      this.view.navigateToLogin();
     }, "log user out");
   }
 }

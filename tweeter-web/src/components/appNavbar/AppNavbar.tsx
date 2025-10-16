@@ -23,7 +23,7 @@ const AppNavbar = (props: Props) => {
       displayInfoMessage: displayInfoMessage,
       deleteMessage: deleteMessage,
       clearUserInfo: clearUserInfo,
-      navigate: navigate,
+      navigateToLogin: () => {navigate("/login")},
       displayErrorMessage: displayErrorMessage
     }; // Observer
   

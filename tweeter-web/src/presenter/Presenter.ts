@@ -11,6 +11,10 @@ export interface MessageView extends View {
   deleteMessage: (id: string) => void;
 }
 
+export interface NavView extends View {
+  navigate: (url: string) => void;
+}
+
 export abstract class Presenter<V extends View> {
   private _view: V;
 
@@ -30,7 +34,7 @@ export abstract class Presenter<V extends View> {
       await operation();
     } catch (error) {
       this.view.displayErrorMessage(
-        `Failed to ${operationDescription} because of exception: ${error}`
+        `Failed to ${operationDescription} because of exception: ${(error as Error).message}`
       );
     }
   }

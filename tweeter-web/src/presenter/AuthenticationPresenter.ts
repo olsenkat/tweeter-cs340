@@ -1,7 +1,7 @@
 import { User, AuthToken } from "tweeter-shared";
-import { Presenter, View } from "./Presenter";
+import { NavView, Presenter, View } from "./Presenter";
 import { UserService } from "../model.service/UserService";
-import { NavView } from "./NavPresenter";
+
 
 export interface AuthenticationView extends NavView {
   checkSubmitButtonStatus: () => boolean;
