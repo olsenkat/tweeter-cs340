@@ -22,7 +22,10 @@ import { ToasterPresenter, ToasterView } from "./presenter/ToasterPresenter";
 import { PagedItemView } from "./presenter/PagedItemPresenter";
 import { Status, User } from "tweeter-shared";
 import ItemScroller from "./components/mainLayout/ItemScroller";
-import { UserNavigationHooksPresenter, UserNavigationHooksView } from "./presenter/UserNavigationHooksPresenter";
+import {
+  UserNavigationHooksPresenter,
+  UserNavigationHooksView,
+} from "./presenter/UserNavigationHooksPresenter";
 import UserItem from "./components/userItem/UserItem";
 import StatusItem from "./components/statusItem/StatusItem";
 
@@ -54,24 +57,28 @@ const AuthenticatedRoutes = () => {
   const { displayedUser } = useUserInfo();
 
   const itemPresenterFactory = (view: UserNavigationHooksView) => {
-    return new UserNavigationHooksPresenter(view)
-  }
+    return new UserNavigationHooksPresenter(view);
+  };
 
   const statusItemComponentFactory = (item: Status, featurePath: string) => {
-    return <StatusItem
-      status={item}
-      featurePath={featurePath}
-      presenterFactory={itemPresenterFactory}
-    />
-  }
-  
+    return (
+      <StatusItem
+        status={item}
+        featurePath={featurePath}
+        presenterFactory={itemPresenterFactory}
+      />
+    );
+  };
+
   const userItemComponentFactory = (item: User, featurePath: string) => {
-    return <UserItem
-      user={item}
-      featurePath={featurePath}
-      presenterFactory={itemPresenterFactory}
-    />
-  }
+    return (
+      <UserItem
+        user={item}
+        featurePath={featurePath}
+        presenterFactory={itemPresenterFactory}
+      />
+    );
+  };
 
   return (
     <Routes>
@@ -149,14 +156,7 @@ const UnauthenticatedRoutes = () => {
     <Routes>
       <Route
         path="/login"
-        element={
-          <Login
-            originalUrl={location.pathname}
-            presenterFactory={(view: AuthenticationView) =>
-              new LoginPresenter(view)
-            }
-          />
-        }
+        element={<Login originalUrl={location.pathname} />}
       />
       <Route
         path="/register"
@@ -169,17 +169,7 @@ const UnauthenticatedRoutes = () => {
           />
         }
       />
-      <Route
-        path="*"
-        element={
-          <Login
-            originalUrl={location.pathname}
-            presenterFactory={(view: AuthenticationView) =>
-              new LoginPresenter(view)
-            }
-          />
-        }
-      />
+      <Route path="*" element={<Login originalUrl={location.pathname} />} />
     </Routes>
   );
 };

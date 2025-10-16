@@ -1,17 +1,17 @@
 import "./Login.css";
 import "bootstrap/dist/css/bootstrap.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import AuthenticationFields from "../AuthenticationFields";
 import { useMessageActions } from "../../toaster/MessageHooks";
 import { useUserInfoActions } from "../../userInfo/UserInfoHooks";
 import { AuthenticationView } from "../../../presenter/AuthenticationPresenter";
-import { LoginPresenter, LoginView } from "../../../presenter/LoginPresenter";
+import { LoginPresenter } from "../../../presenter/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
-  presenterFactory: (view: LoginView) => LoginPresenter;
+  presenter?: LoginPresenter;
 }
 
 const Login = (props: Props) => {
@@ -37,8 +37,13 @@ const Login = (props: Props) => {
 
   const presenterRef = useRef<LoginPresenter | null>(null);
   if (!presenterRef.current) {
-    presenterRef.current = props.presenterFactory(listener);
+    presenterRef.current = props.presenter ?? new LoginPresenter(listener);
   }
+
+  // Create a new presenter whenever 'rememberMe' is updated so it will have a listener with the correct 'rememberMe' value
+  useEffect(() => {
+    presenterRef.current = props.presenter ?? new LoginPresenter(listener);
+  }, [rememberMe]);
 
   let originalUrl: string = props.originalUrl || "";
   let loginParams: LoginParams = { alias, password, rememberMe, originalUrl };

@@ -1,6 +1,6 @@
 import "./Register.css";
 import "bootstrap/dist/css/bootstrap.css";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import AuthenticationFields from "../AuthenticationFields";
@@ -58,8 +58,13 @@ const Register = (props: Props) => {
 
   const presenterRef = useRef<RegisterPresenter | null>(null);
   if (!presenterRef.current) {
-    presenterRef.current = props.presenterFactory(listener);
+    presenterRef.current = new RegisterPresenter(listener);
   }
+
+  // Create a new presenter whenever 'rememberMe' is updated so it will have a listener with the correct 'rememberMe' value
+  useEffect(() => {
+    presenterRef.current = new RegisterPresenter(listener);
+  }, [rememberMe]);
 
   const registerOnEnter = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key == "Enter" && !checkSubmitButtonStatus()) {
