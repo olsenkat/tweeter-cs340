@@ -62,8 +62,14 @@ describe("AppNavbarPresenter", () => {
     await appNavbarPresenter.logOut(authToken);
 
     verify(mockAppNavbarPresenterView.displayErrorMessage(anything())).never();
+    
+    // Clear info message
     verify(mockAppNavbarPresenterView.deleteMessage("messageId123")).once();
+
+    // Clear user info
     verify(mockAppNavbarPresenterView.clearUserInfo()).once();
+
+    // Navigate to login
     verify(mockAppNavbarPresenterView.navigateToLogin()).once();
   });
   it("tells the view to display an error message and does not tell it to clear the info message, clear the user info or navigate to the login page when unsuccessful", async () => {
@@ -78,14 +84,20 @@ describe("AppNavbarPresenter", () => {
     // ).last();
     // console.log(errorString);
 
+    // Display error message
     verify(
       mockAppNavbarPresenterView.displayErrorMessage(
         "Failed to log user out because of exception: An error occured"
       )
     ).once();
 
+    // does not delete the message
     verify(mockAppNavbarPresenterView.deleteMessage(anything())).never();
+
+    // does not clear user info
     verify(mockAppNavbarPresenterView.clearUserInfo()).never();
+
+    // does not navigate to login
     verify(mockAppNavbarPresenterView.navigateToLogin()).never();
   });
 });
