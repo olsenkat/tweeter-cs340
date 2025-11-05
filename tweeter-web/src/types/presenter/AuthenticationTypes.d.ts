@@ -12,5 +12,5 @@ interface RegisterParams extends AuthParams {
   imageFileExtension: string;
 }
 interface LoginParams extends AuthParams {
-  // originalUrl?: string;
+  // Nothing added
 }
