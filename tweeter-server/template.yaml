@@ -168,6 +168,20 @@ Resources:
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
+
+          /story/list:
+            post:
+              description: "Returns a paginated list of story items for a given user."
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getStoryFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
             
             #
             # ADD MORE ENDPOINT DEFINITIONS HERE
@@ -268,6 +282,20 @@ Resources:
           Properties:
             RestApiId: !Ref tweeterApi
             Path: /feed/list
+            Method: POST
+
+  getStoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getStoryFunction
+      Handler: handlers/status/GetStoryHandler.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /story/list
             Method: POST
 
 

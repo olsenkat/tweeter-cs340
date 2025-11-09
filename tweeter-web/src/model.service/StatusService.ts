@@ -8,16 +8,13 @@ export class StatusService extends Service{
     pageSize: number,
     lastItem: Status | null
   ): Promise<[Status[], boolean]> {
-    // TODO: Replace with the result of calling server
-    // return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
-
-    let pagedUserItemRequest = {
+    let pagedStatusItemRequest = {
       token: authToken.token,
       userAlias: userAlias,
       pageSize: pageSize,
       lastItem: lastItem ? lastItem.dto : null
     };
-    return await this.serverFacade.loadMoreFeedItems(pagedUserItemRequest);
+    return await this.serverFacade.loadMoreFeedItems(pagedStatusItemRequest);
   }
 
   public async loadMoreStoryItems(
@@ -26,8 +23,13 @@ export class StatusService extends Service{
     pageSize: number,
     lastItem: Status | null
   ): Promise<[Status[], boolean]> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
+    let pagedStatusItemRequest = {
+      token: authToken.token,
+      userAlias: userAlias,
+      pageSize: pageSize,
+      lastItem: lastItem ? lastItem.dto : null
+    };
+    return await this.serverFacade.loadMoreFeedItems(pagedStatusItemRequest);
   }
 
   public async postStatus(
