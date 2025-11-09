@@ -99,6 +99,7 @@ Resources:
           #
           /user/get:
             post:
+              description: "Returns a user"
               consumes: *commonConsumes
               produces: *commonProduces
               x-amazon-apigateway-integration:
@@ -112,6 +113,7 @@ Resources:
               responses: *commonSwaggerResponses
           /user/create:
             post:
+              description: "Creates a user"
               consumes: *commonConsumes
               produces: *commonProduces
               x-amazon-apigateway-integration:
@@ -124,6 +126,21 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
+          /followee/list:
+            post:
+              description: "Returns a paginated list of followees for a given user."
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  ##### Change "userCreateFunction" to the actual function name.
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFolloweesFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+            
             #
             # ADD MORE ENDPOINT DEFINITIONS HERE
             #
@@ -194,7 +211,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref tweeterApi
-            Path: /followees/get
+            Path: /followee/list
             Method: POST
 
 
