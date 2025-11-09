@@ -1,6 +1,8 @@
 import {
   PagedUserItemRequest,
   PagedUserItemResponse,
+  PostStatusRequest,
+  PostStatusResponse,
   Status,
   StatusDto,
   User,
@@ -115,6 +117,24 @@ export class ServerFacade {
       } else {
         return [items, response.hasMore];
       }
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async postStatus(
+    request: PostStatusRequest
+  ): Promise<void> {
+    const response = await this.clientCommunicator.doPost<
+      PostStatusRequest,
+      PostStatusResponse
+    >(request, "/status/post");
+
+    // Handle errors    
+    if (response.success) {
+      // Successfully posted status
+      return;
     } else {
       console.error(response);
       throw new Error(response.message ?? undefined);

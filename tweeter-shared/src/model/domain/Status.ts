@@ -277,18 +277,18 @@ export class Status {
   }
 
   public get dto(): StatusDto {
-    const segment_dtos = this.segments.map((segment) => segment.dto);  
+    // const segment_dtos = this.segments.map((segment) => segment.dto);  
     return {
         post: this.post,
         user: this.user.dto,
         timestamp: this.timestamp,
-        segments: segment_dtos
+        // segments: segment_dtos
       }
     }
   
     public static fromDto(dto: StatusDto | null): Status | null {
       let user = User.fromDto(dto!.user)!;
-      let segments = dto!.segments.map((segmentDto) => PostSegment.fromDto(segmentDto)!);
+      // let segments = dto!.segments.map((segmentDto) => PostSegment.fromDto(segmentDto)!);
       return dto == null ? null: new Status(dto.post, user, dto.timestamp);
     }
 }
