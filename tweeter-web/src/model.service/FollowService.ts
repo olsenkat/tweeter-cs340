@@ -15,7 +15,7 @@ export class FollowService extends Service {
       pageSize: pageSize,
       lastItem: lastItem ? lastItem.dto : null
     };
-    return this.serverFacade.getMoreFollowees(pagedUserItemRequest);
+    return await this.serverFacade.getMoreFollowees(pagedUserItemRequest);
   }
 
   public async loadMoreFollowers(
@@ -24,8 +24,13 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: User | null
   ): Promise<[User[], boolean]> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfUsers(lastItem, pageSize, userAlias);
+    let pagedUserItemRequest = {
+      token: authToken.token,
+      userAlias: userAlias,
+      pageSize: pageSize,
+      lastItem: lastItem ? lastItem.dto : null
+    };
+    return await this.serverFacade.getMoreFollowers(pagedUserItemRequest);
   }
 
   public async getIsFollowerStatus(
