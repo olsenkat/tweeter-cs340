@@ -287,8 +287,11 @@ export class Status {
     }
   
     public static fromDto(dto: StatusDto | null): Status | null {
-      let user = User.fromDto(dto!.user)!;
-      // let segments = dto!.segments.map((segmentDto) => PostSegment.fromDto(segmentDto)!);
-      return dto == null ? null: new Status(dto.post, user, dto.timestamp);
+      if (!dto || !dto.user) {
+        return null;
+      }
+
+      const user = User.fromDto(dto.user)!;
+      return new Status(dto.post, user, dto.timestamp);
     }
 }

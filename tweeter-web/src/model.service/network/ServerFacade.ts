@@ -1,4 +1,6 @@
 import {
+  GetUserRequest,
+  GetUserResponse,
   PagedUserItemRequest,
   PagedUserItemResponse,
   PostStatusRequest,
@@ -135,6 +137,28 @@ export class ServerFacade {
     if (response.success) {
       // Successfully posted status
       return;
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async getUser(
+    request: GetUserRequest
+  ): Promise<User | null> {
+    const response = await this.clientCommunicator.doPost<
+      GetUserRequest,
+      GetUserResponse
+    >(request, "/user/get");
+
+    // Convert the UserDto returned by ClientCommunicator to a User
+    const user = response.success && response.userDto
+      ? User.fromDto(response.userDto) as User
+      : null;
+
+    // Handle errors    
+    if (response.success) {
+      return user;
     } else {
       console.error(response);
       throw new Error(response.message ?? undefined);

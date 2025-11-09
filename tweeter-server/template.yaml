@@ -231,7 +231,7 @@ Resources:
     Properties:
       FunctionName: userGetFunction
       ##### Modify Handler property to match your code.
-      Handler: handlers/users/UserGetHandler.userGetHandler
+      Handler: handlers/users/GetUserHandler.handler
       Policies: *commonPolicies
       Events:
         PostApi:

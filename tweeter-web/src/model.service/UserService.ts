@@ -7,8 +7,11 @@ export class UserService extends Service {
     authToken: AuthToken,
     alias: string
   ): Promise<User | null> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.findUserByAlias(alias);
+    let getUserRequest = {
+      token: authToken.token,
+      alias: alias
+    };
+    return await this.serverFacade.getUser(getUserRequest);
   }
 
   public async login(
