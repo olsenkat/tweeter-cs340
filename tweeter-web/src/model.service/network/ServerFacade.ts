@@ -1,6 +1,8 @@
 import {
   PagedUserItemRequest,
   PagedUserItemResponse,
+  Status,
+  StatusDto,
   User,
   UserDto,
 } from "tweeter-shared";
@@ -12,11 +14,11 @@ export class ServerFacade {
   private clientCommunicator = new ClientCommunicator(this.SERVER_URL);
 
   public async getMoreFollowees(
-    request: PagedUserItemRequest
+    request: PagedUserItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
     const response = await this.clientCommunicator.doPost<
-      PagedUserItemRequest,
-      PagedUserItemResponse
+      PagedUserItemRequest<UserDto>,
+      PagedUserItemResponse<UserDto>
     >(request, "/followee/list");
 
     // Convert the UserDto array returned by ClientCommunicator to a User array
@@ -39,17 +41,44 @@ export class ServerFacade {
   }
 
   public async getMoreFollowers(
-    request: PagedUserItemRequest
+    request: PagedUserItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
     const response = await this.clientCommunicator.doPost<
-      PagedUserItemRequest,
-      PagedUserItemResponse
+      PagedUserItemRequest<UserDto>,
+      PagedUserItemResponse<UserDto>
     >(request, "/follower/list");
 
     // Convert the UserDto array returned by ClientCommunicator to a User array
     const items: User[] | null =
       response.success && response.items
         ? response.items.map((dto) => User.fromDto(dto) as User)
+        : null;
+
+    // Handle errors    
+    if (response.success) {
+      if (items == null) {
+        throw new Error(`No followers found`);
+      } else {
+        return [items, response.hasMore];
+      }
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async loadMoreFeedItems(
+    request: PagedUserItemRequest<StatusDto>
+  ): Promise<[Status[], boolean]> {
+    const response = await this.clientCommunicator.doPost<
+      PagedUserItemRequest<StatusDto>,
+      PagedUserItemResponse<StatusDto>
+    >(request, "/feed/list");
+
+    // Convert the UserDto array returned by ClientCommunicator to a User array
+    const items: Status[] | null =
+      response.success && response.items
+        ? response.items.map((dto) => Status.fromDto(dto) as Status)
         : null;
 
     // Handle errors    
