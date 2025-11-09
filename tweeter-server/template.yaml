@@ -106,7 +106,6 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri:
-                  ##### Change "userGetFunction" to the actual function name.
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userGetFunction.Arn}/invocations
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
@@ -122,6 +121,20 @@ Resources:
                 uri:
                   ##### Change "userCreateFunction" to the actual function name.
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userCreateFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /user/login:
+            post:
+              description: "Logs in a user"
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userLoginFunction.Arn}/invocations
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
@@ -254,6 +267,21 @@ Resources:
           Properties:
             RestApiId: !Ref tweeterApi
             Path: /user/create
+            Method: POST
+
+  userLoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: userLoginFunction
+      ##### Modify Handler property to match your code.
+      Handler: handlers/users/LoginUserHandler.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/login
             Method: POST
 
   getFolloweesFunction:
