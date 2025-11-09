@@ -29,7 +29,7 @@ export class StatusService extends Service{
       pageSize: pageSize,
       lastItem: lastItem ? lastItem.dto : null
     };
-    return await this.serverFacade.loadMoreFeedItems(pagedStatusItemRequest);
+    return await this.serverFacade.loadMoreStoryItems(pagedStatusItemRequest);
   }
 
   public async postStatus(
