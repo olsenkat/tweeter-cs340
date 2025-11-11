@@ -2,6 +2,8 @@ import {
   AuthToken,
   CreateUserRequest,
   CreateUserResponse,
+  GetIsFollowerStatusRequest,
+  GetIsFollowerStatusResponse,
   GetUserRequest,
   GetUserResponse,
   LoginUserRequest,
@@ -23,6 +25,23 @@ export class ServerFacade {
   private SERVER_URL = "https://vr9pl74occ.execute-api.us-west-2.amazonaws.com/dev";
 
   private clientCommunicator = new ClientCommunicator(this.SERVER_URL);
+
+  public async getIsFollowerStatus(
+    request: GetIsFollowerStatusRequest
+  ): Promise<boolean> {
+    const response = await this.clientCommunicator.doPost<
+      GetIsFollowerStatusRequest,
+      GetIsFollowerStatusResponse
+    >(request, "/follow/isfollower");
+
+    // Handle errors    
+    if (response.success) {
+      return response.isFollower;
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
 
   public async getMoreFollowees(
     request: PagedUserItemRequest<UserDto>

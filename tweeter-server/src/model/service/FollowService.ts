@@ -26,4 +26,13 @@ export class FollowService {
     const dtos = items.map((user) => user.dto);
     return [dtos, hasMore];
   }
+
+  public async getIsFollowerStatus(
+    token: string,
+    user: UserDto,
+    selectedUser: UserDto
+  ): Promise<boolean> {
+    // TODO: Replace with calling database
+    return FakeData.instance.isFollower();
+  }
 }

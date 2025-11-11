@@ -38,8 +38,14 @@ export class FollowService extends Service {
     user: User,
     selectedUser: User
   ): Promise<boolean> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.isFollower();
+    let getIsFollowerStatusRequest = {
+      token: authToken.token,
+      user: user.dto,
+      selectedUser: selectedUser.dto
+    };
+    return await this.serverFacade.getIsFollowerStatus(
+      getIsFollowerStatusRequest
+    );
   }
 
   public async getFolloweeCount(

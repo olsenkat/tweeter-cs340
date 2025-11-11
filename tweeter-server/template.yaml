@@ -153,6 +153,20 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
+          /follow/isfollower:
+            post:
+              description: "Returns if the given user is a follower of the other user."
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getIsFollowerStatusFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
           /followee/list:
             post:
               description: "Returns a paginated list of followees for a given user."
@@ -307,6 +321,20 @@ Resources:
           Properties:
             RestApiId: !Ref tweeterApi
             Path: /user/logout
+            Method: POST
+
+  getIsFollowerStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getIsFollowerStatusFunction
+      Handler: handlers/follow/GetIsFollowerStatusHandler.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /follow/isfollower
             Method: POST
 
   getFolloweesFunction:
