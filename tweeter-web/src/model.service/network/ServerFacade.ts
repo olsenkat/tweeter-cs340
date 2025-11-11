@@ -22,6 +22,8 @@ import {
   PostStatusResponse,
   Status,
   StatusDto,
+  TweeterRequest,
+  TweeterResponse,
   UnfollowRequest,
   UnfollowResponse,
   User,
@@ -30,325 +32,255 @@ import {
 import { ClientCommunicator } from "./ClientCommunicator";
 
 export class ServerFacade {
-  private SERVER_URL = "https://vr9pl74occ.execute-api.us-west-2.amazonaws.com/dev";
+  private SERVER_URL =
+    "https://vr9pl74occ.execute-api.us-west-2.amazonaws.com/dev";
 
   private clientCommunicator = new ClientCommunicator(this.SERVER_URL);
 
-  public async getIsFollowerStatus(
-    request: GetIsFollowerStatusRequest
-  ): Promise<boolean> {
-    const response = await this.clientCommunicator.doPost<
-      GetIsFollowerStatusRequest,
-      GetIsFollowerStatusResponse
-    >(request, "/follow/isfollower");
+  ////////////////////////////////////////////////////////////////////////////
+  //                          Helper Methods
+  ////////////////////////////////////////////////////////////////////////////
 
-    // Handle errors    
+  private async getData<T extends TweeterRequest, U extends TweeterResponse>(
+    request: T,
+    path: string,
+    operation: (response: U) => U
+  ): Promise<U> {
+    const response = await this.clientCommunicator.doPost<T, U>(request, path);
+
     if (response.success) {
-      return response.isFollower;
+      return operation(response);
     } else {
       console.error(response);
       throw new Error(response.message ?? undefined);
     }
+  }
+
+  private getItems<U, V>(
+    response: PagedUserItemResponse<V>,
+    ItemClass: { fromDto(dto: V): U | null },
+    itemString: string
+  ): [U[], boolean] {
+    if (!response.success || !response.items) {
+      throw new Error(`No ${itemString} found`);
+    }
+
+    const items = response.items
+      .map((dto) => ItemClass.fromDto(dto))
+      .filter((item): item is U => item !== null);
+    return [items, response.hasMore];
+  }
+
+  private convertUserDto(userDto: UserDto | null | undefined): User | null {
+    if (!userDto) {
+      return null;
+    }
+    return User.fromDto(userDto) as User;
+  }
+
+  private convertAuthTokenDto(authTokenDto: any): AuthToken | null {
+    if (!authTokenDto) {
+      return null;
+    }
+    return AuthToken.fromDto(authTokenDto) as AuthToken;
+  }
+
+  private checkUserAuthNotNull(user: User | null, authToken: AuthToken | null) {
+    if (user == null) {
+      throw new Error(`User not found`);
+    } else if (authToken == null) {
+      throw new Error(`AuthToken not found`);
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  //                          Follow Methods
+  ////////////////////////////////////////////////////////////////////////////
+
+  public async getIsFollowerStatus(
+    request: GetIsFollowerStatusRequest
+  ): Promise<boolean> {
+    let response: GetIsFollowerStatusResponse = await this.getData<
+      GetIsFollowerStatusRequest,
+      GetIsFollowerStatusResponse
+    >(
+      request,
+      "/follow/isfollower",
+      (response: GetIsFollowerStatusResponse) => {
+        return response;
+      }
+    );
+    return response.isFollower;
   }
 
   public async follow(
     request: FollowRequest
   ): Promise<[followerCount: number, followeeCount: number]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: FollowResponse = await this.getData<
       FollowRequest,
       FollowResponse
-    >(request, "/follow/follow");
-
-    // Handle errors    
-    if (response.success) {
-      return [response.followerCount, response.followeeCount];
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/follow/follow", (response: FollowResponse) => {
+      return response;
+    });
+    return [response.followerCount, response.followeeCount];
   }
 
   public async unfollow(
     request: UnfollowRequest
   ): Promise<[followerCount: number, followeeCount: number]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: UnfollowResponse = await this.getData<
       UnfollowRequest,
       UnfollowResponse
-    >(request, "/follow/unfollow");
-
-    // Handle errors    
-    if (response.success) {
-      return [response.followerCount, response.followeeCount];
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/follow/unfollow", (response: UnfollowResponse) => {
+      return response;
+    });
+    return [response.followerCount, response.followeeCount];
   }
 
   public async getFolloweeCount(
     request: GetFolloweeCountRequest
   ): Promise<number> {
-    const response = await this.clientCommunicator.doPost<
+    const response: GetFolloweeCountResponse = await this.getData<
       GetFolloweeCountRequest,
       GetFolloweeCountResponse
-    >(request, "/followee/count");
-
-    // Handle errors    
-    if (response.success) {
-      return response.followeeCount;
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/followee/count", (response: GetFolloweeCountResponse) => {
+      return response;
+    });
+    return response.followeeCount;
   }
 
   public async getFollowerCount(
     request: GetFollowerCountRequest
   ): Promise<number> {
-    const response = await this.clientCommunicator.doPost<
+    const response: GetFollowerCountResponse = await this.getData<
       GetFollowerCountRequest,
       GetFollowerCountResponse
-    >(request, "/follower/count");
-
-    // Handle errors    
-    if (response.success) {
-      return response.followerCount;
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/follower/count", (response: GetFollowerCountResponse) => {
+      return response;
+    });
+    return response.followerCount;
   }
 
   public async getMoreFollowees(
     request: PagedUserItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: PagedUserItemResponse<UserDto> = await this.getData<
       PagedUserItemRequest<UserDto>,
       PagedUserItemResponse<UserDto>
-    >(request, "/followee/list");
-
-    // Convert the UserDto array returned by ClientCommunicator to a User array
-    const items: User[] | null =
-      response.success && response.items
-        ? response.items.map((dto) => User.fromDto(dto) as User)
-        : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (items == null) {
-        throw new Error(`No followees found`);
-      } else {
-        return [items, response.hasMore];
-      }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/followee/list", (response: PagedUserItemResponse<UserDto>) => {
+      return response;
+    });
+    return this.getItems<User, UserDto>(response, User, "followees");
   }
 
   public async getMoreFollowers(
     request: PagedUserItemRequest<UserDto>
   ): Promise<[User[], boolean]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: PagedUserItemResponse<UserDto> = await this.getData<
       PagedUserItemRequest<UserDto>,
       PagedUserItemResponse<UserDto>
-    >(request, "/follower/list");
-
-    // Convert the UserDto array returned by ClientCommunicator to a User array
-    const items: User[] | null =
-      response.success && response.items
-        ? response.items.map((dto) => User.fromDto(dto) as User)
-        : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (items == null) {
-        throw new Error(`No followers found`);
-      } else {
-        return [items, response.hasMore];
-      }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/follower/list", (response: PagedUserItemResponse<UserDto>) => {
+      return response;
+    });
+    return this.getItems<User, UserDto>(response, User, "followers");
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  //                          Status Methods
+  ////////////////////////////////////////////////////////////////////////////
 
   public async loadMoreFeedItems(
     request: PagedUserItemRequest<StatusDto>
   ): Promise<[Status[], boolean]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: PagedUserItemResponse<StatusDto> = await this.getData<
       PagedUserItemRequest<StatusDto>,
       PagedUserItemResponse<StatusDto>
-    >(request, "/feed/list");
-
-    // Convert the StatusDto array returned by ClientCommunicator to a Status array
-    const items: Status[] | null =
-      response.success && response.items
-        ? response.items.map((dto) => Status.fromDto(dto) as Status)
-        : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (items == null) {
-        throw new Error(`No feed items found`);
-      } else {
-        return [items, response.hasMore];
-      }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    >(request, "/feed/list", (response: PagedUserItemResponse<StatusDto>) => {
+      return response;
+    });
+    return this.getItems<Status, StatusDto>(response, Status, "feed items");
   }
 
   public async loadMoreStoryItems(
     request: PagedUserItemRequest<StatusDto>
   ): Promise<[Status[], boolean]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: PagedUserItemResponse<StatusDto> = await this.getData<
       PagedUserItemRequest<StatusDto>,
       PagedUserItemResponse<StatusDto>
-    >(request, "/story/list");
+    >(request, "/story/list", (response: PagedUserItemResponse<StatusDto>) => {
+      return response;
+    });
+    return this.getItems<Status, StatusDto>(response, Status, "story items");
+  }
 
-    // Convert the StatusDto array returned by ClientCommunicator to a Status array
-    const items: Status[] | null =
-      response.success && response.items
-        ? response.items.map((dto) => Status.fromDto(dto) as Status)
-        : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (items == null) {
-        throw new Error(`No story items found`);
-      } else {
-        return [items, response.hasMore];
+  public async postStatus(request: PostStatusRequest): Promise<void> {
+    await this.getData<PostStatusRequest, PostStatusResponse>(
+      request,
+      "/status/post",
+      (response: PostStatusResponse) => {
+        return response;
       }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    );
+    return;
   }
 
-  public async postStatus(
-    request: PostStatusRequest
-  ): Promise<void> {
-    const response = await this.clientCommunicator.doPost<
-      PostStatusRequest,
-      PostStatusResponse
-    >(request, "/status/post");
+  ////////////////////////////////////////////////////////////////////////////
+  //                          User Methods
+  ////////////////////////////////////////////////////////////////////////////
 
-    // Handle errors    
-    if (response.success) {
-      // Successfully posted status
-      return;
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
-  }
-
-  public async getUser(
-    request: GetUserRequest
-  ): Promise<User | null> {
-    const response = await this.clientCommunicator.doPost<
+  public async getUser(request: GetUserRequest): Promise<User | null> {
+    const response: GetUserResponse = await this.getData<
       GetUserRequest,
       GetUserResponse
-    >(request, "/user/get");
+    >(request, "/user/get", (response: GetUserResponse) => {
+      return response;
+    });
 
-    // Convert the UserDto returned by ClientCommunicator to a User
-    const user = response.success && response.userDto
-      ? User.fromDto(response.userDto) as User
-      : null;
-
-    // Handle errors    
-    if (response.success) {
-      return user;
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    return this.convertUserDto(response.userDto);
   }
 
   public async loginUser(
     request: LoginUserRequest
   ): Promise<[User, AuthToken]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: LoginUserResponse = await this.getData<
       LoginUserRequest,
       LoginUserResponse
-    >(request, "/user/login");
+    >(request, "/user/login", (response: LoginUserResponse) => {
+      return response;
+    });
 
-    // Convert the UserDto returned by ClientCommunicator to a User
-    const user = response.success && response.userDto
-      ? User.fromDto(response.userDto) as User
-      : null;
+    const user = this.convertUserDto(response.userDto);
+    const authToken = this.convertAuthTokenDto(response.authTokenDto);
+    this.checkUserAuthNotNull(user, authToken);
 
-    const authToken = response.success && response.authTokenDto
-      ? AuthToken.fromDto(response.authTokenDto) as AuthToken
-      : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (user == null) {
-        throw new Error(`User not found`);
-      }
-      else if (authToken == null) {
-        throw new Error(`AuthToken not found`);
-      }
-      else {
-        return [user, authToken];
-      }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    return [user as User, authToken as AuthToken];
   }
 
   public async createUser(
     request: CreateUserRequest
   ): Promise<[User, AuthToken]> {
-    const response = await this.clientCommunicator.doPost<
+    const response: CreateUserResponse = await this.getData<
       CreateUserRequest,
       CreateUserResponse
-    >(request, "/user/create");
+    >(request, "/user/create", (response: CreateUserResponse) => {
+      return response;
+    });
 
-    // Convert the UserDto returned by ClientCommunicator to a User
-    const user = response.success && response.userDto
-      ? User.fromDto(response.userDto) as User
-      : null;
+    const user = this.convertUserDto(response.userDto);
+    const authToken = this.convertAuthTokenDto(response.authTokenDto);
+    this.checkUserAuthNotNull(user, authToken);
 
-    const authToken = response.success && response.authTokenDto
-      ? AuthToken.fromDto(response.authTokenDto) as AuthToken
-      : null;
-
-    // Handle errors    
-    if (response.success) {
-      if (user == null) {
-        throw new Error(`User not created`);
-      }
-      else if (authToken == null) {
-        throw new Error(`AuthToken not created`);
-      }
-      else {
-        return [user, authToken];
-      }
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+    return [user as User, authToken as AuthToken];
   }
 
-  public async logoutUser(
-    request: LogoutUserRequest
-  ): Promise<void> {
-    const response = await this.clientCommunicator.doPost<
-      LogoutUserRequest,
-      LogoutUserResponse
-    >(request, "/user/logout");
-
-    // Handle errors    
-    if (response.success) {
-      return;
-    } else {
-      console.error(response);
-      throw new Error(response.message ?? undefined);
-    }
+  public async logoutUser(request: LogoutUserRequest): Promise<void> {
+    await this.getData<LogoutUserRequest, LogoutUserResponse>(
+      request,
+      "/user/logout",
+      (response: LogoutUserResponse) => {
+        return response;
+      }
+    );
+    return;
   }
 }
