@@ -26,6 +26,7 @@ export type { TweeterRequest } from "./model/net/request/TweeterRequest";
 export type { PostStatusRequest } from "./model/net/request/PostStatusRequest";
 export type { GetUserRequest } from "./model/net/request/GetUserRequest";
 export type { LoginUserRequest } from "./model/net/request/LoginUserRequest";
+export type { CreateUserRequest } from "./model/net/request/CreateUserRequest"
 
 //
 // Responses
@@ -35,6 +36,7 @@ export type { TweeterResponse } from "./model/net/response/TweeterResponse";
 export type { PostStatusResponse } from "./model/net/response/PostStatusResponse";
 export type { GetUserResponse } from "./model/net/response/GetUserResponse";
 export type { LoginUserResponse } from "./model/net/response/LoginUserResponse";
+export type { CreateUserResponse } from "./model/net/response/CreateUserResponse"
 
 //
 // Other

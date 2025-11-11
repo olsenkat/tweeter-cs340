@@ -1,5 +1,7 @@
 import {
   AuthToken,
+  CreateUserRequest,
+  CreateUserResponse,
   GetUserRequest,
   GetUserResponse,
   LoginUserRequest,
@@ -192,6 +194,40 @@ export class ServerFacade {
       }
       else if (authToken == null) {
         throw new Error(`AuthToken not found`);
+      }
+      else {
+        return [user, authToken];
+      }
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async createUser(
+    request: CreateUserRequest
+  ): Promise<[User, AuthToken]> {
+    const response = await this.clientCommunicator.doPost<
+      CreateUserRequest,
+      CreateUserResponse
+    >(request, "/user/create");
+
+    // Convert the UserDto returned by ClientCommunicator to a User
+    const user = response.success && response.userDto
+      ? User.fromDto(response.userDto) as User
+      : null;
+
+    const authToken = response.success && response.authTokenDto
+      ? AuthToken.fromDto(response.authTokenDto) as AuthToken
+      : null;
+
+    // Handle errors    
+    if (response.success) {
+      if (user == null) {
+        throw new Error(`User not created`);
+      }
+      else if (authToken == null) {
+        throw new Error(`AuthToken not created`);
       }
       else {
         return [user, authToken];

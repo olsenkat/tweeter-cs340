@@ -258,8 +258,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: userCreateFunction
-      ##### Modify Handler property to match your code.
-      Handler: handlers/users/UserCreateHandler.userCreateHandler
+      Handler: handlers/users/CreateUserHandler.handler
       Policies: *commonPolicies
       Events:
         PostApi:
