@@ -2,6 +2,9 @@ import {
   AuthToken,
   CreateUserRequest,
   CreateUserResponse,
+  Follow,
+  FollowRequest,
+  FollowResponse,
   GetFolloweeCountRequest,
   GetFolloweeCountResponse,
   GetFollowerCountRequest,
@@ -41,6 +44,23 @@ export class ServerFacade {
     // Handle errors    
     if (response.success) {
       return response.isFollower;
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async follow(
+    request: FollowRequest
+  ): Promise<[followerCount: number, followeeCount: number]> {
+    const response = await this.clientCommunicator.doPost<
+      FollowRequest,
+      FollowResponse
+    >(request, "/follow/follow");
+
+    // Handle errors    
+    if (response.success) {
+      return [response.followerCount, response.followeeCount];
     } else {
       console.error(response);
       throw new Error(response.message ?? undefined);

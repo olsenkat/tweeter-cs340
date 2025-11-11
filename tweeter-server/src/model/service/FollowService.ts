@@ -51,4 +51,19 @@ export class FollowService {
     // TODO: Replace with calling database
     return FakeData.instance.getFollowerCount(user.alias);
   }
+
+  public async follow(
+      token: string,
+      userToFollow: UserDto
+    ): Promise<[followerCount: number, followeeCount: number]> {
+      // Pause so we can see the follow message. Remove when connected to the server
+      await new Promise((f) => setTimeout(f, 2000));
+  
+      // TODO: Call database to follow user
+  
+      const followerCount = await this.getFollowerCount(token, userToFollow);
+      const followeeCount = await this.getFolloweeCount(token, userToFollow);
+  
+      return [followerCount, followeeCount];
+    }
 }
