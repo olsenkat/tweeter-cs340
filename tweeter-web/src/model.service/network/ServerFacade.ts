@@ -2,7 +2,6 @@ import {
   AuthToken,
   CreateUserRequest,
   CreateUserResponse,
-  Follow,
   FollowRequest,
   FollowResponse,
   GetFolloweeCountRequest,
@@ -23,6 +22,8 @@ import {
   PostStatusResponse,
   Status,
   StatusDto,
+  UnfollowRequest,
+  UnfollowResponse,
   User,
   UserDto,
 } from "tweeter-shared";
@@ -57,6 +58,23 @@ export class ServerFacade {
       FollowRequest,
       FollowResponse
     >(request, "/follow/follow");
+
+    // Handle errors    
+    if (response.success) {
+      return [response.followerCount, response.followeeCount];
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async unfollow(
+    request: UnfollowRequest
+  ): Promise<[followerCount: number, followeeCount: number]> {
+    const response = await this.clientCommunicator.doPost<
+      UnfollowRequest,
+      UnfollowResponse
+    >(request, "/follow/unfollow");
 
     // Handle errors    
     if (response.success) {
