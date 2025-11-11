@@ -52,8 +52,13 @@ export class FollowService extends Service {
     authToken: AuthToken,
     user: User
   ): Promise<number> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getFolloweeCount(user.alias);
+    let getFolloweeCountRequest = {
+      token: authToken.token,
+      user: user.dto
+    };
+    return await this.serverFacade.getFolloweeCount(
+      getFolloweeCountRequest
+    );
   }
 
   public async getFollowerCount(
