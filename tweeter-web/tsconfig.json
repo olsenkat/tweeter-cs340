@@ -6,7 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
-    "types": ["react", "react-dom", "vite/client", "jest"],
+    "types": ["node", "react", "react-dom", "vite/client", "jest"],
     "typeRoots": ["./node_modules/@types"],
     "allowJs": true,
     "skipLibCheck": true,
