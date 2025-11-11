@@ -43,4 +43,12 @@ export class FollowService {
     // TODO: Replace with calling database
     return FakeData.instance.getFolloweeCount(user.alias);
   }
+
+  public async getFollowerCount(
+    token: string,
+    user: UserDto
+  ): Promise<number> {
+    // TODO: Replace with calling database
+    return FakeData.instance.getFollowerCount(user.alias);
+  }
 }

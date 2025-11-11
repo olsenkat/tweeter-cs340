@@ -119,7 +119,6 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri:
-                  ##### Change "userCreateFunction" to the actual function name.
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userCreateFunction.Arn}/invocations
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
@@ -181,6 +180,20 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
+          /follower/count:
+            post:
+              description: "Returns the count of followers for a given user."
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFollowerCountFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
           /followee/list:
             post:
               description: "Returns a paginated list of followees for a given user."
@@ -190,7 +203,6 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri:
-                  ##### Change "userCreateFunction" to the actual function name.
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFolloweesFunction.Arn}/invocations
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
@@ -363,6 +375,20 @@ Resources:
           Properties:
             RestApiId: !Ref tweeterApi
             Path: /followee/count
+            Method: POST
+
+  getFollowerCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getFollowerCountFunction
+      Handler: handlers/follow/GetFollowerCountHandler.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /follower/count
             Method: POST
 
   getFolloweesFunction:

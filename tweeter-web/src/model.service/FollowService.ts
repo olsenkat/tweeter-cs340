@@ -13,7 +13,7 @@ export class FollowService extends Service {
       token: authToken.token,
       userAlias: userAlias,
       pageSize: pageSize,
-      lastItem: lastItem ? lastItem.dto : null
+      lastItem: lastItem ? lastItem.dto : null,
     };
     return await this.serverFacade.getMoreFollowees(pagedUserItemRequest);
   }
@@ -28,7 +28,7 @@ export class FollowService extends Service {
       token: authToken.token,
       userAlias: userAlias,
       pageSize: pageSize,
-      lastItem: lastItem ? lastItem.dto : null
+      lastItem: lastItem ? lastItem.dto : null,
     };
     return await this.serverFacade.getMoreFollowers(pagedUserItemRequest);
   }
@@ -41,7 +41,7 @@ export class FollowService extends Service {
     let getIsFollowerStatusRequest = {
       token: authToken.token,
       user: user.dto,
-      selectedUser: selectedUser.dto
+      selectedUser: selectedUser.dto,
     };
     return await this.serverFacade.getIsFollowerStatus(
       getIsFollowerStatusRequest
@@ -54,19 +54,20 @@ export class FollowService extends Service {
   ): Promise<number> {
     let getFolloweeCountRequest = {
       token: authToken.token,
-      user: user.dto
+      user: user.dto,
     };
-    return await this.serverFacade.getFolloweeCount(
-      getFolloweeCountRequest
-    );
+    return await this.serverFacade.getFolloweeCount(getFolloweeCountRequest);
   }
 
   public async getFollowerCount(
     authToken: AuthToken,
     user: User
   ): Promise<number> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getFollowerCount(user.alias);
+    let getFollowerCountRequest = {
+      token: authToken.token,
+      user: user.dto,
+    };
+    return await this.serverFacade.getFollowerCount(getFollowerCountRequest);
   }
 
   public async follow(
