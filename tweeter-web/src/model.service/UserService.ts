@@ -48,7 +48,9 @@ export class UserService extends Service {
   }
 
   public async logout (authToken: AuthToken): Promise<void> {
-    // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-    await new Promise((res) => setTimeout(res, 1000));
+    let logoutUserRequest = {
+      token: authToken.token
+    };
+    return await this.serverFacade.logoutUser(logoutUserRequest);
   };
 }

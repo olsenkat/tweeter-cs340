@@ -139,6 +139,20 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
+          /user/logout:
+            post:
+              description: "Logs a user out"
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userLogoutFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
           /followee/list:
             post:
               description: "Returns a paginated list of followees for a given user."
@@ -243,7 +257,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: userGetFunction
-      ##### Modify Handler property to match your code.
       Handler: handlers/users/GetUserHandler.handler
       Policies: *commonPolicies
       Events:
@@ -272,7 +285,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: userLoginFunction
-      ##### Modify Handler property to match your code.
       Handler: handlers/users/LoginUserHandler.handler
       Policies: *commonPolicies
       Events:
@@ -281,6 +293,20 @@ Resources:
           Properties:
             RestApiId: !Ref tweeterApi
             Path: /user/login
+            Method: POST
+
+  userLogoutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: userLogoutFunction
+      Handler: handlers/users/LogoutUserHandler.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/logout
             Method: POST
 
   getFolloweesFunction:

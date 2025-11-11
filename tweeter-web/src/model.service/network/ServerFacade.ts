@@ -6,6 +6,8 @@ import {
   GetUserResponse,
   LoginUserRequest,
   LoginUserResponse,
+  LogoutUserRequest,
+  LogoutUserResponse,
   PagedUserItemRequest,
   PagedUserItemResponse,
   PostStatusRequest,
@@ -232,6 +234,23 @@ export class ServerFacade {
       else {
         return [user, authToken];
       }
+    } else {
+      console.error(response);
+      throw new Error(response.message ?? undefined);
+    }
+  }
+
+  public async logoutUser(
+    request: LogoutUserRequest
+  ): Promise<void> {
+    const response = await this.clientCommunicator.doPost<
+      LogoutUserRequest,
+      LogoutUserResponse
+    >(request, "/user/logout");
+
+    // Handle errors    
+    if (response.success) {
+      return;
     } else {
       console.error(response);
       throw new Error(response.message ?? undefined);
