@@ -7,7 +7,7 @@ export interface StoryDao {
   getStoryPage(
     alias: string,
     pageSize: number,
-    lastTimestamp: number | null
+    lastTimestamp?: number
   ): Promise<DataPage<StoryRecord>>;
   addStatusToStory(status: StoryRecord): Promise<void>;
 }

@@ -10,8 +10,8 @@ export class DynamoStatusDao extends DynamoInterface {
   async getPage<T extends StatusRecord>(
     alias: string,
     pageSize: number,
-    lastTimestamp: number | null,
-    mapItem: (item: any) => T
+    mapItem: (item: any) => T,
+    lastTimestamp?: number,
   ): Promise<DataPage<T>> {
     return await this.getPageOfItems<T>({
       keyConditionExpression: "user_alias = :userAlias",
@@ -32,7 +32,10 @@ export class DynamoStatusDao extends DynamoInterface {
 
   async putStatus(item: any): Promise<void> {
     const condition =
-      "attribute_not_exists(user_alias) AND attribute_not_exists(timestamp)";
-    await this.putItem(item, condition, this.tableName);
+      "attribute_not_exists(user_alias) AND attribute_not_exists(#timestamp)";
+      const expressionAttributeNames = {
+        "#timestamp": "timestamp"
+      }
+    await this.putItem(item, condition, this.tableName, expressionAttributeNames);
   }
 }

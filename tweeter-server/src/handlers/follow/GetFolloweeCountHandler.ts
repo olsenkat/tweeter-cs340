@@ -1,13 +1,22 @@
-import { GetFolloweeCountRequest, GetFolloweeCountResponse } from "tweeter-shared";
-import { FollowService } from "../../model/service/FollowService";
+import {
+  GetFolloweeCountRequest,
+  GetFolloweeCountResponse,
+} from "tweeter-shared";
+import { ServiceFactory } from "../../model/factory/ServiceFactory";
 
-export const handler = async (request: GetFolloweeCountRequest): Promise<GetFolloweeCountResponse> => {
-    const followService = new FollowService();
-    const followeeCount = await followService.getFolloweeCount(request.token, request.user)
+export const handler = async (
+  request: GetFolloweeCountRequest
+): Promise<GetFolloweeCountResponse> => {
+  const serviceFactory = new ServiceFactory();
+  const followService = serviceFactory.getFollowService();
+  const followeeCount = await followService.getFolloweeCount(
+    request.token,
+    request.user
+  );
 
-    return {
-        success: true,
-        message: null,
-        followeeCount: followeeCount
-    }
-}
+  return {
+    success: true,
+    message: null,
+    followeeCount: followeeCount,
+  };
+};

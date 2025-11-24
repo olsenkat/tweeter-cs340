@@ -8,8 +8,11 @@ import { DynamoInterface } from "./DynamoInterface";
 import { UserRecord } from "../../entities/UserRecord";
 
 export class DynamoFollowDao extends DynamoInterface implements FollowDao {
-  constructor(private userDao: UserDao) {
+  private userDao: UserDao;
+
+  constructor(userDao: UserDao) {
     super("follows", "follows_index");
+    this.userDao = userDao;
   }
 
   async follow(followerAlias: string, followeeAlias: string): Promise<void> {
@@ -26,7 +29,7 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
       followee_name: followeeName,
     };
     const condition =
-      "attribute_not_exists(follower_handle) AND attribute_not_exists(followee_handle)";
+      "attribute_not_exists(follower_handle)";
     await this.putItem(item, condition, "follow");
   }
 

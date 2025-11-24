@@ -47,13 +47,14 @@ export abstract class DynamoInterface {
     return result.Item;
   }
 
-  protected async putItem(item: any, condition: string, description: string) {
+  protected async putItem(item: any, condition: string, description: string, expressionAttributeNames?: any) {
     try {
       await this.client.send(
         new PutCommand({
           TableName: this.tableName,
           Item: item,
           ConditionExpression: condition,
+          ExpressionAttributeNames: expressionAttributeNames
         })
       );
     } catch (err) {

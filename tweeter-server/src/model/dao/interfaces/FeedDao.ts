@@ -7,7 +7,7 @@ export interface FeedDao {
   getFeedPage(
     alias: string,
     pageSize: number,
-    lastTimestamp: number | null
+    lastTimestamp?: number
   ): Promise<DataPage<FeedRecord>>;
   addStatusToFeed(status: FeedRecord): Promise<void>;
 }

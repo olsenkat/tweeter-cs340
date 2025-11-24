@@ -11,9 +11,9 @@ export class DynamoFeedDao extends DynamoStatusDao implements FeedDao {
   async getFeedPage(
     alias: string,
     pageSize: number,
-    lastTimestamp: number | null
+    lastTimestamp?: number
   ): Promise<DataPage<FeedRecord>> {
-    return await this.getPage<FeedRecord>(alias, pageSize, lastTimestamp, (item) => {
+    return await this.getPage<FeedRecord>(alias, pageSize, (item) => {
       return {
         post: item.post,
         userAlias: item.user_alias,
@@ -24,7 +24,7 @@ export class DynamoFeedDao extends DynamoStatusDao implements FeedDao {
         authorLastName: item.author_last_name,
         authorImageKey: item.author_image_key,
       } as FeedRecord;
-    });
+    }, lastTimestamp);
   }
 
   async addStatusToFeed(status: FeedRecord): Promise<void> {

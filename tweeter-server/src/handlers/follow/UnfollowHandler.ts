@@ -1,14 +1,20 @@
 import { UnfollowRequest, UnfollowResponse } from "tweeter-shared";
-import { FollowService } from "../../model/service/FollowService";
+import { ServiceFactory } from "../../model/factory/ServiceFactory";
 
-export const handler = async (request: UnfollowRequest): Promise<UnfollowResponse> => {
-    const followService = new FollowService();
-    const [ followerCount, followeeCount ] = await followService.unfollow(request.token, request.userToUnfollow)
+export const handler = async (
+  request: UnfollowRequest
+): Promise<UnfollowResponse> => {
+  const serviceFactory = new ServiceFactory();
+  const followService = serviceFactory.getFollowService();
+  const [followerCount, followeeCount] = await followService.unfollow(
+    request.token,
+    request.userToUnfollow
+  );
 
-    return {
-        success: true,
-        message: null,
-        followerCount: followerCount,
-        followeeCount: followeeCount
-    }
-}
+  return {
+    success: true,
+    message: null,
+    followerCount: followerCount,
+    followeeCount: followeeCount,
+  };
+};

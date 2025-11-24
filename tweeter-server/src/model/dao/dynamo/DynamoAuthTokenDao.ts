@@ -1,11 +1,12 @@
-import { DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { AuthTokenRecord } from "../../entities/AuthTokenRecord";
 import { AuthDao } from "../interfaces/AuthDao";
 import { DynamoInterface } from "./DynamoInterface";
+import { InternalServerError } from "../../errors/Error";
 
 export class DynamoAuthDao extends DynamoInterface implements AuthDao {
   constructor() {
-    super("auth", "token-index");
+    super("auth", "token_index");
   }
 
   async createAuthToken(
@@ -13,19 +14,42 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
     token: string,
     timestamp: number
   ): Promise<void> {
-    const item = {
-      alias: alias,
-      token: token,
-      timestamp: timestamp,
-    };
-    const condition =
-      "attribute_not_exists(alias) AND attribute_not_exists(token)";
-    await this.putItem(item, condition, "auth");
+    try {
+      const item = {
+        alias: alias,
+        token: token,
+        timestamp: timestamp,
+      };
+      const condition =
+        "attribute_not_exists(#alias) AND attribute_not_exists(#token)";
+      const expressionAttributeNames = {
+        "#alias": "alias",
+        "#token": "token",
+      };
+      await this.putItem(item, condition, "auth", expressionAttributeNames);
+    } catch (error) {
+      console.error("Dynamo putItem error: ", error);
+      throw new InternalServerError("Could not create auth item: " + error);
+    }
+  }
+
+  async updateTokenTimestamp(token: string, alias: string, timestamp: number): Promise<void> {
+    await this.client.send(new UpdateCommand({
+        TableName: this.tableName,
+        Key: {
+          token: token,
+          alias: alias
+        },
+        UpdateExpression: "SET #ts = :ts",
+        ExpressionAttributeNames: {"#ts": "timestamp"},
+        ExpressionAttributeValues: {":ts": timestamp}
+    }))
   }
 
   async getAuthToken(token: string): Promise<AuthTokenRecord | null> {
     const query = new QueryCommand({
-      KeyConditionExpression: "token = :token",
+      KeyConditionExpression: "#tk = :token",
+      ExpressionAttributeNames: { "#tk": "token" },
       ExpressionAttributeValues: { ":token": token },
       TableName: this.tableName,
       IndexName: this.indexName,
@@ -47,11 +71,11 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
   async deleteAuthToken(token: string): Promise<void> {
     const authToken = await this.getAuthToken(token);
     if (!authToken) {
-        return
+      return;
     }
     const authKey = {
       token: token,
-      alias: authToken.alias
+      alias: authToken.alias,
     };
     const params = {
       TableName: this.tableName,
@@ -60,4 +84,6 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
 
     await this.client.send(new DeleteCommand(params));
   }
+
+  
 }

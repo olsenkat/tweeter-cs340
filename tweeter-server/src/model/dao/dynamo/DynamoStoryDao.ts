@@ -11,9 +11,9 @@ export class DynamoStoryDao extends DynamoStatusDao implements StoryDao {
   async getStoryPage(
     alias: string,
     pageSize: number,
-    lastTimestamp: number | null
+    lastTimestamp?: number
   ): Promise<DataPage<StoryRecord>> {
-    return await this.getPage<StoryRecord>(alias, pageSize, lastTimestamp, (item) => {
+    return await this.getPage<StoryRecord>(alias, pageSize, (item) => {
       return {
         post: item.post,
         userAlias: item.user_alias,
@@ -23,7 +23,7 @@ export class DynamoStoryDao extends DynamoStatusDao implements StoryDao {
         lastName: item.last_name,
         imageKey: item.image_key,
       } as StoryRecord;
-    });
+    }, lastTimestamp);
   }
 
   async addStatusToStory(status: StoryRecord): Promise<void> {

@@ -1,11 +1,13 @@
 import { CreateUserRequest, CreateUserResponse } from "tweeter-shared";
-import { UserService } from "../../model/service/UserService";
+import { ServiceFactory } from "../../model/factory/ServiceFactory";
 
 export const handler = async (
   request: CreateUserRequest
 ): Promise<CreateUserResponse> => {
-  const userService = new UserService();
-  let [ userDto, authTokenDto ] = await userService.registerUser(
+  const serviceFactory = new ServiceFactory();
+  const userService = serviceFactory.getUserService();
+
+  let [userDto, authTokenDto] = await userService.registerUser(
     request.firstName,
     request.lastName,
     request.alias,
@@ -18,6 +20,6 @@ export const handler = async (
     success: true,
     message: null,
     userDto: userDto,
-    authTokenDto: authTokenDto
+    authTokenDto: authTokenDto,
   };
 };

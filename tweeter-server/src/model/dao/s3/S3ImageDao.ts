@@ -1,14 +1,16 @@
 import { S3Dao } from "../interfaces/S3Dao";
 import { S3Client, PutObjectCommand, ObjectCannedACL } from "@aws-sdk/client-s3";
 
-const BUCKET = "tweeter-server-deploy-bucket"
-const REGION = "us-west-2"
+const BUCKET = process.env.S3_BUCKET || "tweeter-server-deploy-bucket"
+const REGION = process.env.AWS_REGION || "us-west-2"
+
+const client = new S3Client({ region: REGION });
 
 export class S3ImageDao implements S3Dao {
 
-  async uploadImage(fileName: string, imageStringBase64Encoded: string): Promise<string> {
-    const key = "image/" + fileName
-    await this.putImage(key, imageStringBase64Encoded);
+  async uploadImage(fileName: string, imageBase64: string, extension: string): Promise<string> {
+    const key = "image/" + fileName + "." + extension;
+    await this.putImage(key, imageBase64, extension);
     return key;
   }
   async getImageUrl(key: string): Promise<string> {
@@ -17,7 +19,8 @@ export class S3ImageDao implements S3Dao {
 
   async putImage(
     key: string,
-    imageStringBase64Encoded: string
+    imageStringBase64Encoded: string,
+    extension: string
   ): Promise<string> {
     let decodedImageBuffer: Buffer = Buffer.from(
       imageStringBase64Encoded,
@@ -27,11 +30,10 @@ export class S3ImageDao implements S3Dao {
       Bucket: BUCKET,
       Key: key,
       Body: decodedImageBuffer,
-      ContentType: "image/png",
-      ACL: ObjectCannedACL.public_read,
+      ContentType: "image/" + extension,
+      // ACL: ObjectCannedACL.public_read,
     };
     const c = new PutObjectCommand(s3Params);
-    const client = new S3Client({ region: REGION });
     try {
       await client.send(c);
       return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;

@@ -1,7 +1,7 @@
 export class Follows {
-    private follower_handle: string;
+    private _follower_handle: string;
     private follower_name: string;
-    private followee_handle: string;
+    private _followee_handle: string;
     private followee_name: string;
 
     constructor(
@@ -10,10 +10,17 @@ export class Follows {
         followee_handle: string,
         followee_name: string
     ) {
-        this.follower_handle = follower_handle;
+        this._follower_handle = follower_handle;
         this.follower_name = follower_name;
-        this.followee_handle = followee_handle;
+        this._followee_handle = followee_handle;
         this.followee_name = followee_name;
+    }
+    public get followee_handle() {
+        return this._followee_handle;
+    }
+
+    public get follower_handle() {
+        return this._follower_handle;
     }
 
     toString(): string {

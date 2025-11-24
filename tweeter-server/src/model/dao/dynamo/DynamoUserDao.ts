@@ -35,6 +35,11 @@ export class DynamoUserDao extends DynamoInterface implements UserDao {
       imageKey: user.imageKey,
     };
     const condition = "attribute_not_exists(alias)";
-    await this.putItem(item, condition, "user");
+    try {
+      await this.putItem(item, condition, "user");
+    } catch (error) {
+      console.error("Dynamo putItem error: ", error);
+      throw new Error("Could not create user item: " + error);
+    }
   }
 }
