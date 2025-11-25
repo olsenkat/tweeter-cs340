@@ -5,6 +5,7 @@ import { Follows } from "../entities/Follows";
 import { DataPage } from "../entities/DataPage";
 import { AuthService } from "./AuthService";
 import { DaoFactory } from "../factory/DaoFactory";
+import { BadRequestError } from "../errors/Error";
 
 export class FollowService extends Service {
   private authService: AuthService;
@@ -20,6 +21,10 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
+
+    if (pageSize <= 0) {
+      throw new BadRequestError("Page size must be > 0");
+    }
 
     await this.authService.validateToken(token);
 
@@ -38,6 +43,10 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
+
+    if (pageSize <= 0) {
+      throw new BadRequestError("Page size must by > 0");
+    }
 
     await this.authService.validateToken(token);
 
@@ -78,10 +87,12 @@ export class FollowService extends Service {
     const { alias: followerAlias}  = await this.authService.validateToken(token);
     const followeeAlias = userToFollow.alias;
 
-    // Pause so we can see the follow message. Remove when connected to the server
-    // await new Promise((f) => setTimeout(f, 2000));
-
-    await this.daoFactory.getFollowDao().follow(followerAlias, followeeAlias);
+    await this.daoFactory.getFollowDao().follow(followerAlias, followeeAlias).catch(err => {
+      if (err.message.includes("not found")) {
+        throw new BadRequestError("User to follow does not exist");
+      }
+      throw err;
+    });
 
     // TODO - optomize, do in parallel
     const followerCount = await this.getFollowerCount(token, userToFollow);
@@ -98,10 +109,12 @@ export class FollowService extends Service {
     const { alias: followerAlias } = await this.authService.validateToken(token);
     const followeeAlias = userToUnfollow.alias;
 
-    // Pause so we can see the unfollow message. Remove when connected to the server
-    // await new Promise((f) => setTimeout(f, 2000));
-
-    await this.daoFactory.getFollowDao().unfollow(followerAlias, followeeAlias)
+    await this.daoFactory.getFollowDao().unfollow(followerAlias, followeeAlias).catch(err => {
+      if (err.message.includes("not found")) {
+        throw new BadRequestError("User to unfollow does not exist");
+      }
+      throw err;
+    });
 
     // TODO - optomize, do in parallel
     const followerCount = await this.getFollowerCount(token, userToUnfollow);
@@ -139,7 +152,6 @@ export class FollowService extends Service {
     );
   }
 
-
   public async loadMoreItems<T, U, V>(
         items: DataPage<U>,
         mapKey: (item: U) => string,
@@ -159,6 +171,7 @@ export class FollowService extends Service {
         for (const key of keys) {
           const item = await getItem(key)
           if (!item) {
+            // Do i need to throw an error here
             continue;
           }
           dtos.push(await mapItemDto(item))

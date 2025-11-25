@@ -1,7 +1,5 @@
-import { StatusDto } from "../../dto/StatusDto";
-import { TweeterRequest } from "./TweeterRequest";
+import { LoginCreateBaseRequest } from "./LoginCreateBaseRequest";
 
-export interface LoginUserRequest extends TweeterRequest {
-    readonly alias: string,
-    readonly password: string
+export interface LoginUserRequest extends LoginCreateBaseRequest {
+    // Nothing added
 }

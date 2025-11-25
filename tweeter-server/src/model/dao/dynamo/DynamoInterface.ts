@@ -6,6 +6,7 @@ import {
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DataPage } from "../../entities/DataPage";
+import { BadRequestError, InternalServerError } from "../../errors/Error";
 
 export interface PaginationParams<T> {
   keyConditionExpression: string;
@@ -36,51 +37,71 @@ export abstract class DynamoInterface {
     return this._dynamo;
   }
 
-  protected async getItem(key: any, indexName?:string) {
-    const result = await this.client.send(
-      new GetCommand({
-        TableName: this.tableName,
-        Key: key,
-      })
-    );
+  protected async getItem(key: any, indexName?: string) {
+    try {
+      const result = await this.client.send(
+        new GetCommand({
+          TableName: this.tableName,
+          Key: key,
+        })
+      );
 
-    return result.Item;
+      return result.Item;
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get item: " + error);
+    }
   }
 
-  protected async putItem(item: any, condition: string, description: string, expressionAttributeNames?: any) {
+  protected async putItem(
+    item: any,
+    condition: string,
+    description: string,
+    expressionAttributeNames?: any
+  ) {
     try {
       await this.client.send(
         new PutCommand({
           TableName: this.tableName,
           Item: item,
           ConditionExpression: condition,
-          ExpressionAttributeNames: expressionAttributeNames
+          ExpressionAttributeNames: expressionAttributeNames,
         })
       );
-    } catch (err) {
-      console.error(`Failed to insert ${description} item`, err);
-      throw new Error(`Could not create ${description} item`);
+    } catch (error) {
+      console.error("Dynamo putItem error: ", error);
+      throw new InternalServerError("Could not put item: " + error);
     }
   }
 
   protected async getPageOfItems<T>(
     params: PaginationParams<T>
   ): Promise<DataPage<T>> {
-    const query = new QueryCommand({
-      KeyConditionExpression: params.keyConditionExpression,
-      ExpressionAttributeValues: params.expressionValues,
-      TableName: this.tableName,
-      IndexName: params.indexName,
-      Limit: params.pageSize,
-      ExclusiveStartKey: params.lastKey,
-    });
-    const data = await this.client.send(query);
-    const hasMorePages = data.LastEvaluatedKey !== undefined;
+    
+    if (params.pageSize <= 0) {
+    throw new BadRequestError("Page size must be greater than 0");
+}
 
-    const items: T[] = data.Items ? data.Items.map(params.mapItem) : [];
-    const lastEvaluatedKeyHandle = data.LastEvaluatedKey
-      ? (data.LastEvaluatedKey.followee_handle as string)
-      : undefined;
-    return new DataPage<T>(items, hasMorePages, lastEvaluatedKeyHandle);
+    try {
+      const query = new QueryCommand({
+        KeyConditionExpression: params.keyConditionExpression,
+        ExpressionAttributeValues: params.expressionValues,
+        TableName: this.tableName,
+        IndexName: params.indexName,
+        Limit: params.pageSize,
+        ExclusiveStartKey: params.lastKey,
+      });
+      const data = await this.client.send(query);
+      const hasMorePages = data.LastEvaluatedKey !== undefined;
+
+      const items: T[] = data.Items ? data.Items.map(params.mapItem) : [];
+      const lastEvaluatedKeyHandle = data.LastEvaluatedKey
+        ? (data.LastEvaluatedKey.followee_handle as string)
+        : undefined;
+      return new DataPage<T>(items, hasMorePages, lastEvaluatedKeyHandle);
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get item page: " + error);
+    }
   }
 }

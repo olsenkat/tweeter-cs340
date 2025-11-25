@@ -1,6 +1,6 @@
 import { UserDto } from "../../dto/UserDto";
 import { AuthenticatedTweeterRequest } from "./AuthenticatedTweeterRequest";
 
-export interface UnfollowRequest extends AuthenticatedTweeterRequest {
-    readonly userToUnfollow: UserDto
+export interface GetCountRequest extends AuthenticatedTweeterRequest {
+    readonly user: UserDto
 }

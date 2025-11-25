@@ -1,6 +1,7 @@
 import { DataPage } from "../../entities/DataPage";
 import { DynamoInterface } from "./DynamoInterface";
 import { StatusRecord } from "../../entities/StatusRecord";
+import { InternalServerError } from "../../errors/Error";
 
 export class DynamoStatusDao extends DynamoInterface {
   constructor(tableName: string) {
@@ -11,31 +12,46 @@ export class DynamoStatusDao extends DynamoInterface {
     alias: string,
     pageSize: number,
     mapItem: (item: any) => T,
-    lastTimestamp?: number,
+    lastTimestamp?: number
   ): Promise<DataPage<T>> {
-    return await this.getPageOfItems<T>({
-      keyConditionExpression: "user_alias = :userAlias",
-      expressionValues: {
-        ":userAlias": alias,
-      },
-      pageSize: pageSize,
-      mapItem: mapItem,
-      lastKey: lastTimestamp
-        ? {
-            user_alias: alias,
-            timestamp: lastTimestamp,
-          }
-        : undefined,
-      indexName: undefined,
-    });
+    try {
+      return await this.getPageOfItems<T>({
+        keyConditionExpression: "user_alias = :userAlias",
+        expressionValues: {
+          ":userAlias": alias,
+        },
+        pageSize: pageSize,
+        mapItem: mapItem,
+        lastKey: lastTimestamp
+          ? {
+              user_alias: alias,
+              timestamp: lastTimestamp,
+            }
+          : undefined,
+        indexName: undefined,
+      });
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get status item page: " + error);
+    }
   }
 
   async putStatus(item: any): Promise<void> {
-    const condition =
-      "attribute_not_exists(user_alias) AND attribute_not_exists(#timestamp)";
+    try {
+      const condition =
+        "attribute_not_exists(user_alias) AND attribute_not_exists(#timestamp)";
       const expressionAttributeNames = {
-        "#timestamp": "timestamp"
-      }
-    await this.putItem(item, condition, this.tableName, expressionAttributeNames);
+        "#timestamp": "timestamp",
+      };
+      await this.putItem(
+        item,
+        condition,
+        this.tableName,
+        expressionAttributeNames
+      );
+    } catch (error) {
+      console.error("Dynamo putItem error: ", error);
+      throw new InternalServerError("Could not create status item: " + error);
+    }
   }
 }

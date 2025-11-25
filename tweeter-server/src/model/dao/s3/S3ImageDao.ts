@@ -1,20 +1,33 @@
+import { InternalServerError } from "../../errors/Error";
 import { S3Dao } from "../interfaces/S3Dao";
-import { S3Client, PutObjectCommand, ObjectCannedACL } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  ObjectCannedACL,
+} from "@aws-sdk/client-s3";
 
-const BUCKET = process.env.S3_BUCKET || "tweeter-server-deploy-bucket"
-const REGION = process.env.AWS_REGION || "us-west-2"
+const BUCKET = process.env.S3_BUCKET || "tweeter-server-deploy-bucket";
+const REGION = process.env.AWS_REGION || "us-west-2";
 
 const client = new S3Client({ region: REGION });
 
 export class S3ImageDao implements S3Dao {
-
-  async uploadImage(fileName: string, imageBase64: string, extension: string): Promise<string> {
-    const key = "image/" + fileName + "." + extension;
-    await this.putImage(key, imageBase64, extension);
-    return key;
+  async uploadImage(
+    fileName: string,
+    imageBase64: string,
+    extension: string
+  ): Promise<string> {
+    try {
+      const key = "image/" + fileName + "." + extension;
+      await this.putImage(key, imageBase64, extension);
+      return key;
+    } catch (error) {
+      console.error("S3 uploadImage error: ", error);
+      throw new InternalServerError("Could not put s3 image item: " + error);
+    }
   }
   async getImageUrl(key: string): Promise<string> {
-    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`
+    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
   }
 
   async putImage(
@@ -38,7 +51,7 @@ export class S3ImageDao implements S3Dao {
       await client.send(c);
       return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
     } catch (error) {
-      throw Error("s3 put image failed with: " + error);
+      throw new InternalServerError("s3 put image failed with: " + error);
     }
   }
 }

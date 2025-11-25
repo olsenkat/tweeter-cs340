@@ -1,6 +1,5 @@
-import { TweeterResponse } from "./TweeterResponse";
+import { BaseFollowResponse } from "./BaseFollowResponse";
 
-export interface UnfollowResponse extends TweeterResponse {
-    readonly followerCount: number,
-    readonly followeeCount: number
+export interface UnfollowResponse extends BaseFollowResponse {
+    // Same as base response
 }

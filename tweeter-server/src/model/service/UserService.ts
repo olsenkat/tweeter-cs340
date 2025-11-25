@@ -9,6 +9,7 @@ import { UserRecord } from "../entities/UserRecord";
 import bcrypt from "bcryptjs";
 import { AuthService } from "./AuthService";
 import { DaoFactory } from "../factory/DaoFactory";
+import { BadRequestError } from "../errors/Error";
 
 export class UserService extends Service {
   private authService: AuthService;
@@ -29,11 +30,11 @@ export class UserService extends Service {
   ): Promise<[UserDto, AuthTokenDto]> {
     const userRecord = await this.daoFactory.getUserDao().getUser(alias);
     if (!userRecord) {
-      throw new Error("User not found");
+      throw new BadRequestError("User not found");
     }
     const validPassword = await bcrypt.compare(password, userRecord.passwordHash);
     if (!validPassword) {
-      throw new Error("Password Incorrect");
+      throw new BadRequestError("Password Incorrect");
     }
 
     const user = await this.getUserDtoFromRecord(userRecord);
@@ -74,8 +75,6 @@ export class UserService extends Service {
   }
 
   public async logoutUser(token: string): Promise<void> {
-    // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-    // await new Promise((res) => setTimeout(res, 1000));
 
     await this.authService.validateToken(token);
     await this.authService.deleteToken(token);

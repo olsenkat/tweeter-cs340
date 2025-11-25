@@ -1,8 +1,7 @@
 import { AuthTokenDto } from "../../dto/AuthTokenDto";
-import { UserDto } from "../../dto/UserDto";
-import { TweeterResponse } from "./TweeterResponse";
+import { BaseUserResponse } from "./BaseUserResponse";
 
-export interface CreateUserResponse extends TweeterResponse {
-    readonly userDto: UserDto,
+export interface CreateUserResponse extends BaseUserResponse {
+    // readonly userDto: UserDto,
     readonly authTokenDto: AuthTokenDto
 }

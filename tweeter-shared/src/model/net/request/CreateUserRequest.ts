@@ -1,10 +1,9 @@
-import { TweeterRequest } from "./TweeterRequest";
+import { LoginCreateBaseRequest } from "./LoginCreateBaseRequest";
 
-export interface CreateUserRequest extends TweeterRequest {
+export interface CreateUserRequest extends LoginCreateBaseRequest {
     readonly firstName: string,
     readonly lastName: string,
-    readonly alias: string,
-    readonly password: string,
+    // alias and password in base request
     readonly imageStringBase64: string,
     readonly imageFileExtension: string
 }

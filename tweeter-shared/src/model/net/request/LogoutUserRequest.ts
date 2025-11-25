@@ -1,5 +1,5 @@
-import { TweeterRequest } from "./TweeterRequest";
+import { AuthenticatedTweeterRequest } from "./AuthenticatedTweeterRequest";
 
-export interface LogoutUserRequest extends TweeterRequest {
-    readonly token: string
+export interface LogoutUserRequest extends AuthenticatedTweeterRequest {
+    // nothing changed
 }

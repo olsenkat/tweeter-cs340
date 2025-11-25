@@ -6,6 +6,7 @@ import { DataPage } from "../../entities/DataPage";
 import { Follows } from "../../entities/Follows";
 import { DynamoInterface } from "./DynamoInterface";
 import { UserRecord } from "../../entities/UserRecord";
+import { BadRequestError, InternalServerError } from "../../errors/Error";
 
 export class DynamoFollowDao extends DynamoInterface implements FollowDao {
   private userDao: UserDao;
@@ -16,66 +17,90 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
   }
 
   async follow(followerAlias: string, followeeAlias: string): Promise<void> {
-    const follower = await this.getCheckUser(followerAlias);
-    const followee = await this.getCheckUser(followeeAlias);
+    try {
+      const follower = await this.getCheckUser(followerAlias);
+      const followee = await this.getCheckUser(followeeAlias);
 
-    const followerName: string = this.getFullName(follower);
-    const followeeName: string = this.getFullName(followee);
+      const followerName: string = this.getFullName(follower);
+      const followeeName: string = this.getFullName(followee);
 
-    const item = {
-      follower_handle: followerAlias,
-      followee_handle: followeeAlias,
-      follower_name: followerName,
-      followee_name: followeeName,
-    };
-    const condition =
-      "attribute_not_exists(follower_handle)";
-    await this.putItem(item, condition, "follow");
+      const item = {
+        follower_handle: followerAlias,
+        followee_handle: followeeAlias,
+        follower_name: followerName,
+        followee_name: followeeName,
+      };
+      const condition = "attribute_not_exists(follower_handle)";
+      await this.putItem(item, condition, "follow");
+    } catch (error) {
+      console.error("Dynamo putItem error: ", error);
+      throw new InternalServerError("Could not create follow item: " + error);
+    }
   }
 
   async unfollow(followerAlias: string, followeeAlias: string): Promise<void> {
-    await this.getCheckUser(followerAlias);
-    await this.getCheckUser(followeeAlias);
-    await this.deleteItem(followerAlias, followeeAlias);
+    try {
+      await this.getCheckUser(followerAlias);
+      await this.getCheckUser(followeeAlias);
+      await this.deleteItem(followerAlias, followeeAlias);
+    } catch (error) {
+      console.error("Dynamo deleteItem error: ", error);
+      throw new InternalServerError("Could not delete follow item: " + error);
+    }
   }
 
   async isFollower(
     followerAlias: string,
     followeeAlias: string
   ): Promise<boolean> {
-    const followKey = {
-      follower_handle: followerAlias,
-      followee_handle: followeeAlias,
-    };
-    const followItem = await this.getItem(followKey);
-    return !!followItem;
+    try {
+      const followKey = {
+        follower_handle: followerAlias,
+        followee_handle: followeeAlias,
+      };
+      const followItem = await this.getItem(followKey);
+      return !!followItem;
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get is follower: " + error);
+    }
   }
 
   async getFollowersCount(alias: string): Promise<number> {
-    const params: QueryCommandInput = {
-      KeyConditionExpression: "followee_handle = :followeeHandle",
-      ExpressionAttributeValues: {
-        ":followeeHandle": alias,
-      },
-      TableName: this.tableName,
-      IndexName: this.indexName,
-      Select: "COUNT",
-    };
-    const data = await this.client.send(new QueryCommand(params));
-    return data.Count ?? 0;
+    try {
+      const params: QueryCommandInput = {
+        KeyConditionExpression: "followee_handle = :followeeHandle",
+        ExpressionAttributeValues: {
+          ":followeeHandle": alias,
+        },
+        TableName: this.tableName,
+        IndexName: this.indexName,
+        Select: "COUNT",
+      };
+      const data = await this.client.send(new QueryCommand(params));
+      return data.Count ?? 0;
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get follower count: " + error);
+    }
   }
 
   async getFolloweesCount(alias: string): Promise<number> {
-    const params: QueryCommandInput = {
-      KeyConditionExpression: "follower_handle = :followerHandle",
-      ExpressionAttributeValues: {
-        ":followerHandle": alias,
-      },
-      TableName: this.tableName,
-      Select: "COUNT",
-    };
-    const data = await this.client.send(new QueryCommand(params));
-    return data.Count ?? 0;
+    try {
+      const params: QueryCommandInput = {
+        KeyConditionExpression: "follower_handle = :followerHandle",
+        ExpressionAttributeValues: {
+          ":followerHandle": alias,
+        },
+        TableName: this.tableName,
+        Select: "COUNT",
+      };
+      const data = await this.client.send(new QueryCommand(params));
+      return data.Count ?? 0;
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get followee count: " + error);
+    }
   }
 
   async getFollowersPage(
@@ -83,11 +108,23 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
     pageSize: number,
     lastFollowerHandle?: string
   ): Promise<DataPage<Follows>> {
-    return await this.getPageOfFollowers(
-      targetUserAlias,
-      pageSize,
-      lastFollowerHandle
-    );
+    if (!targetUserAlias || typeof targetUserAlias !== "string") {
+      throw new BadRequestError("User alias is required");
+    }
+
+    if (!pageSize || pageSize <=0) {
+      throw new BadRequestError("Page size must be greater than 0");
+    }
+    try {
+      return await this.getPageOfFollowers(
+        targetUserAlias,
+        pageSize,
+        lastFollowerHandle
+      );
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get follower page: " + error);
+    }
   }
 
   async getFolloweesPage(
@@ -95,11 +132,23 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
     pageSize: number,
     lastFolloweeHandle?: string
   ): Promise<DataPage<Follows>> {
-    return await this.getPageOfFollowees(
-      targetUserAlias,
-      pageSize,
-      lastFolloweeHandle
-    );
+  if (!targetUserAlias || typeof targetUserAlias !== "string") {
+      throw new BadRequestError("User alias is required");
+    }
+
+    if (!pageSize || pageSize <=0) {
+      throw new BadRequestError("Page size must be greater than 0");
+    }
+    try {
+      return await this.getPageOfFollowees(
+        targetUserAlias,
+        pageSize,
+        lastFolloweeHandle
+      );
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get follower page: " + error);
+    }
   }
 
   /////////////////////////////////////////
@@ -110,7 +159,7 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
     const userDto = await this.userDao.getUser(userHandle);
 
     if (!userDto) {
-      throw new Error("User Handle not found: " + userHandle);
+      throw new BadRequestError("User Handle not found: " + userHandle);
     } else {
       return userDto;
     }
@@ -137,7 +186,7 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
       );
     } catch (err) {
       console.error("Failed to delete follow item", err);
-      throw new Error("Could not delete follow item");
+      throw new InternalServerError("Could not delete follow item");
     }
   }
 

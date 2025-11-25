@@ -1,6 +1,7 @@
 import { UserDao } from "../interfaces/UserDao";
 import { DynamoInterface } from "./DynamoInterface";
 import { UserRecord } from "../../entities/UserRecord";
+import { InternalServerError } from "../../errors/Error";
 
 export class DynamoUserDao extends DynamoInterface implements UserDao {
   constructor() {
@@ -8,22 +9,27 @@ export class DynamoUserDao extends DynamoInterface implements UserDao {
   }
 
   async getUser(alias: string): Promise<UserRecord | null> {
-    const userKey = {
-      alias: alias,
-    };
-    const user = await this.getItem(userKey);
+    try {
+      const userKey = {
+        alias: alias,
+      };
+      const user = await this.getItem(userKey);
 
-    if (!user) {
-      return null;
+      if (!user) {
+        return null;
+      }
+
+      return {
+        alias: user.alias,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        passwordHash: user.passwordHash,
+        imageKey: user.imageKey,
+      };
+    } catch (error) {
+      console.error("Dynamo getUser error: ", error);
+      throw new InternalServerError("Could not get user item: " + error);
     }
-
-    return {
-      alias: user.alias,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      passwordHash: user.passwordHash,
-      imageKey: user.imageKey,
-    };
   }
 
   async insertUser(user: UserRecord): Promise<void> {
@@ -38,8 +44,8 @@ export class DynamoUserDao extends DynamoInterface implements UserDao {
     try {
       await this.putItem(item, condition, "user");
     } catch (error) {
-      console.error("Dynamo putItem error: ", error);
-      throw new Error("Could not create user item: " + error);
+      console.error("Dynamo putUser error: ", error);
+      throw new InternalServerError("Could not put user item: " + error);
     }
   }
 }

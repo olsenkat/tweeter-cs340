@@ -1,7 +1,5 @@
-import { UserDto } from "../../dto/UserDto";
-import { TweeterRequest } from "./TweeterRequest";
+import { GetCountRequest } from "./GetCountRequest";
 
-export interface GetFollowerCountRequest extends TweeterRequest {
-    readonly token: string,
-    readonly user: UserDto
+export interface GetFollowerCountRequest extends GetCountRequest {
+    // Nothing added
 }

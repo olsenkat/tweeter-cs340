@@ -1,4 +1,8 @@
-import { DeleteCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DeleteCommand,
+  QueryCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { AuthTokenRecord } from "../../entities/AuthTokenRecord";
 import { AuthDao } from "../interfaces/AuthDao";
 import { DynamoInterface } from "./DynamoInterface";
@@ -33,57 +37,71 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
     }
   }
 
-  async updateTokenTimestamp(token: string, alias: string, timestamp: number): Promise<void> {
-    await this.client.send(new UpdateCommand({
+  async updateTokenTimestamp(
+    token: string,
+    alias: string,
+    timestamp: number
+  ): Promise<void> {
+    await this.client.send(
+      new UpdateCommand({
         TableName: this.tableName,
         Key: {
           token: token,
-          alias: alias
+          alias: alias,
         },
         UpdateExpression: "SET #ts = :ts",
-        ExpressionAttributeNames: {"#ts": "timestamp"},
-        ExpressionAttributeValues: {":ts": timestamp}
-    }))
+        ExpressionAttributeNames: { "#ts": "timestamp" },
+        ExpressionAttributeValues: { ":ts": timestamp },
+      })
+    );
   }
 
   async getAuthToken(token: string): Promise<AuthTokenRecord | null> {
-    const query = new QueryCommand({
-      KeyConditionExpression: "#tk = :token",
-      ExpressionAttributeNames: { "#tk": "token" },
-      ExpressionAttributeValues: { ":token": token },
-      TableName: this.tableName,
-      IndexName: this.indexName,
-    });
-    const data = await this.client.send(query);
+    try {
+      const query = new QueryCommand({
+        KeyConditionExpression: "#tk = :token",
+        ExpressionAttributeNames: { "#tk": "token" },
+        ExpressionAttributeValues: { ":token": token },
+        TableName: this.tableName,
+        IndexName: this.indexName,
+      });
+      const data = await this.client.send(query);
 
-    if (!data.Items || data.Items.length === 0) {
-      return null;
+      if (!data.Items || data.Items.length === 0) {
+        return null;
+      }
+
+      const item = data.Items[0];
+      return {
+        alias: item.alias,
+        token: item.token,
+        timestamp: item.timestamp,
+      };
+    } catch (error) {
+      console.error("Dynamo getItem error: ", error);
+      throw new InternalServerError("Could not get auth item: " + error);
     }
-
-    const item = data.Items[0];
-    return {
-      alias: item.alias,
-      token: item.token,
-      timestamp: item.timestamp,
-    };
   }
 
   async deleteAuthToken(token: string): Promise<void> {
-    const authToken = await this.getAuthToken(token);
-    if (!authToken) {
-      return;
+    try {
+      const authToken = await this.getAuthToken(token);
+      if (!authToken) {
+        return;
+      }
+      const authKey = {
+        token: token,
+        alias: authToken.alias,
+      };
+      const params = {
+        TableName: this.tableName,
+        Key: authKey,
+      };
+
+      await this.client.send(new DeleteCommand(params));
+    } catch (error) {
+      console.error("Dynamo deleteItem error: ", error);
+      throw new InternalServerError("Could not delete auth item: " + error);
     }
-    const authKey = {
-      token: token,
-      alias: authToken.alias,
-    };
-    const params = {
-      TableName: this.tableName,
-      Key: authKey,
-    };
-
-    await this.client.send(new DeleteCommand(params));
   }
-
-  
 }
