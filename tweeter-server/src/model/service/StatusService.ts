@@ -186,12 +186,15 @@ export class StatusService extends Service {
   ): Promise<[StatusDto[], boolean]> {
     const statusRecords = items.values;
 
-    const dtos: StatusDto[] = [];
+    const dtos: StatusDto[] = await Promise.all(
+      statusRecords.map(mapItemDto));
 
-    // TODO - Will need to optimize this.
-    for (const record of statusRecords) {
-      dtos.push(await mapItemDto(record));
-    }
+    // const dtos: StatusDto[] = [];
+
+    // // TODO - Will need to optimize this.
+    // for (const record of statusRecords) {
+    //   dtos.push(await mapItemDto(record));
+    // }
 
     const hasMore = items.hasMorePages;
     return [dtos, hasMore];
