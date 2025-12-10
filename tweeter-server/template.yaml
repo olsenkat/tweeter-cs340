@@ -11,11 +11,13 @@ Globals:
     CodeUri: ./dist/
     Layers:
       - !Ref tweeterLayer
-    Timeout: 30
+    Timeout: 120
     MemorySize: 128
     Environment:
       Variables:
         S3_BUCKET: tweeter-server-deploy-bucket
+        FEED_UPDATE_QUEUE_URL: !Ref FeedUpdateQueue
+        FEED_BATCH_QUEUE_URL: !Ref FeedBatchQueue
 #
 # Reusable blocks of configuration. These are referenced throughout the template to avoid duplication.
 # &identifier is used to define a reusable block, and *identifier is used to reference it.
@@ -49,7 +51,7 @@ Resources:
       Name: tweeterApi
       StageName: prod
       Cors:
-        AllowMethods: "'GET,POST,PUT,DELETE'"
+        AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
       DefinitionBody:
@@ -286,13 +288,38 @@ Resources:
               consumes: *commonConsumes
               produces: *commonProduces
               x-amazon-apigateway-integration:
-                type: aws
+                type: aws_proxy
                 httpMethod: POST
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${postStatusFunction.Arn}/invocations
                 requestTemplates: *commonRequestTemplates
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
+            options:
+              summary: "CORS preflight"
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: mock
+                requestTemplates:
+                  application/json: '{ "statusCode": 200 }'
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+              responses:
+                "200":
+                  description: "CORS support"
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
             
             #
             # ADD MORE ENDPOINT DEFINITIONS HERE
@@ -302,10 +329,15 @@ Resources:
   # SQS Queues
   #
   
-  #   MyQueue:
-  #     Type: AWS::SQS::Queue
-  #     Properties:
-  #       QueueName: MyQueue
+  FeedUpdateQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: FeedUpdateQueue
+  
+  FeedBatchQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: FeedBatchQueue
 
   #
   # Lambda Layer (reused by all Lambda functions)
@@ -523,18 +555,31 @@ Resources:
   # SQS Queue Lambda Functions
   #
 
-  #   MyQueueFunction:
-  #     Type: AWS::Serverless::Function
-  #     Properties:
-  #       FunctionName: MyQueueFunction
-  #       Handler: <PATH TO LAMBDA HANDLER>
-  #       Policies: *commonPolicies
-  #       Events:
-  #         SQSTrigger:
-  #           Type: SQS
-  #           Properties:
-  #             Queue: !GetAtt MyQueue.Arn
-  #             Enabled: true
+  feedUpdateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: feedUpdateFunction
+      Handler: handlers/FeedUpdateHandler.handler
+      Policies: *commonPolicies
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt FeedUpdateQueue.Arn
+            Enabled: true
+
+  feedBatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: feedBatchFunction
+      Handler: handlers/FeedBatchHandler.handler
+      Policies: *commonPolicies
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt FeedBatchQueue.Arn
+            Enabled: true
 
   #
   # DynamoDB Tables

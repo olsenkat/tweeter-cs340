@@ -10,7 +10,7 @@ import { BadRequestError } from "../errors/Error";
 export class FollowService extends Service {
   private authService: AuthService;
 
-  constructor (daoFactory: DaoFactory, authService: AuthService) {
+  constructor(daoFactory: DaoFactory, authService: AuthService) {
     super(daoFactory);
     this.authService = authService;
   }
@@ -21,11 +21,10 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
-
     if (pageSize <= 0) {
       throw new BadRequestError("Page size must be > 0");
     }
-
+    console.log("Validating token in loadMoreFollowees: ", token);
     await this.authService.validateToken(token);
 
     const items = await this.daoFactory
@@ -34,7 +33,7 @@ export class FollowService extends Service {
     const mapKey = (item: Follows) => {
       return item.followee_handle;
     };
-    return await this.loadMore(items, mapKey);
+    return await this.loadMoreItems(items, mapKey);
   }
 
   public async loadMoreFollowers(
@@ -43,6 +42,10 @@ export class FollowService extends Service {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
+    if (token === null || token === undefined || token.length === 0) {
+      console.warn("loadMoreFollowers called with invalid token");
+      throw new BadRequestError("Invalid token");
+    }
 
     if (pageSize <= 0) {
       throw new BadRequestError("Page size must by > 0");
@@ -56,7 +59,7 @@ export class FollowService extends Service {
     const mapKey = (item: Follows) => {
       return item.follower_handle;
     };
-    return await this.loadMore(items, mapKey);
+    return await this.loadMoreItems(items, mapKey);
   }
 
   public async getIsFollowerStatus(
@@ -64,17 +67,21 @@ export class FollowService extends Service {
     user: UserDto,
     selectedUser: UserDto
   ): Promise<boolean> {
+    console.log("Validating token in getIsFollowerStatus: ", token);
     await this.authService.validateToken(token);
-    return await this.daoFactory.getFollowDao().isFollower(user.alias, selectedUser.alias)
+    return await this.daoFactory
+      .getFollowDao()
+      .isFollower(user.alias, selectedUser.alias);
   }
 
   public async getFolloweeCount(token: string, user: UserDto): Promise<number> {
+    console.log("Validating token in getFolloweeCount: ", token);
     await this.authService.validateToken(token);
     return await this.daoFactory.getFollowDao().getFolloweesCount(user.alias);
   }
 
   public async getFollowerCount(token: string, user: UserDto): Promise<number> {
-
+    console.log("Validating token in getFollowerCount: ", token);
     await this.authService.validateToken(token);
     return await this.daoFactory.getFollowDao().getFollowersCount(user.alias);
   }
@@ -83,16 +90,21 @@ export class FollowService extends Service {
     token: string,
     userToFollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
-
-    const { alias: followerAlias}  = await this.authService.validateToken(token);
+    console.log("Validating token in follow: ", token);
+    const { alias: followerAlias } = await this.authService.validateToken(
+      token
+    );
     const followeeAlias = userToFollow.alias;
 
-    await this.daoFactory.getFollowDao().follow(followerAlias, followeeAlias).catch(err => {
-      if (err.message.includes("not found")) {
-        throw new BadRequestError("User to follow does not exist");
-      }
-      throw err;
-    });
+    await this.daoFactory
+      .getFollowDao()
+      .follow(followerAlias, followeeAlias)
+      .catch((err) => {
+        if (err.message.includes("not found")) {
+          throw new BadRequestError("User to follow does not exist");
+        }
+        throw err;
+      });
 
     // TODO - optomize, do in parallel
     const followerCount = await this.getFollowerCount(token, userToFollow);
@@ -105,16 +117,21 @@ export class FollowService extends Service {
     token: string,
     userToUnfollow: UserDto
   ): Promise<[followerCount: number, followeeCount: number]> {
-
-    const { alias: followerAlias } = await this.authService.validateToken(token);
+    console.log("Validating token in unfollow: ", token);
+    const { alias: followerAlias } = await this.authService.validateToken(
+      token
+    );
     const followeeAlias = userToUnfollow.alias;
 
-    await this.daoFactory.getFollowDao().unfollow(followerAlias, followeeAlias).catch(err => {
-      if (err.message.includes("not found")) {
-        throw new BadRequestError("User to unfollow does not exist");
-      }
-      throw err;
-    });
+    await this.daoFactory
+      .getFollowDao()
+      .unfollow(followerAlias, followeeAlias)
+      .catch((err) => {
+        if (err.message.includes("not found")) {
+          throw new BadRequestError("User to unfollow does not exist");
+        }
+        throw err;
+      });
 
     // TODO - optomize, do in parallel
     const followerCount = await this.getFollowerCount(token, userToUnfollow);
@@ -126,13 +143,36 @@ export class FollowService extends Service {
   ///////////////////////////////////
   //           Helper Functions
   //////////////////////////////////
-  public async loadMore(
-    items: DataPage<Follows>,
-    mapKey: (item: Follows) => string
+
+  public async getFollowers(alias: string) {
+    let lastFollower: string | undefined = undefined;
+    const followers: string[] = [];
+    const pageSize = 100;
+    while (true) {
+      const items = await this.daoFactory
+        .getFollowDao()
+        .getFollowersPage(alias, pageSize, lastFollower);
+
+        const pageAliases = items.values.map(item => item.follower_handle);
+
+        followers.push(...pageAliases);
+
+        if (!items.hasMorePages) {
+          break
+        }
+        
+        if (pageAliases.length > 0) {
+          lastFollower = pageAliases[pageAliases.length - 1];
+        }  
+    }
+    return followers
+  }
+
+  public async loadMoreItems<U>(
+    items: DataPage<U>,
+    mapKey: (item: U) => string,
+    // mapItemDto: (item: UserRecord) => Promise<UserDto>
   ): Promise<[UserDto[], boolean]> {
-    const getItem = this.daoFactory.getUserDao().getUser.bind(
-        this.daoFactory.getUserDao()
-    );
     const mapItemDto = async (user: UserRecord): Promise<UserDto> => {
       const imageUrl = await this.daoFactory
         .getS3Dao()
@@ -143,41 +183,17 @@ export class FollowService extends Service {
         alias: user.alias,
         imageUrl: imageUrl,
       } as UserDto;
-    };
-    return await this.loadMoreItems<UserDto, Follows, UserRecord>(
-      items,
-      mapKey,
-      getItem,
-      mapItemDto
+    }
+
+    const keys: string[] = items.values.map(mapKey);
+    const userRecords = await this.daoFactory.getUserDao().batchGetUsers(keys);
+
+    const dtos: UserDto[] = await Promise.all(
+      userRecords.map((record) => mapItemDto(record))
     );
+
+    const hasMore = items.hasMorePages;
+    return [dtos, hasMore];
   }
 
-  public async loadMoreItems<T, U, V>(
-        items: DataPage<U>,
-        mapKey: (item: U) => string,
-        getItem: (key: string) => Promise<V | null>,
-        mapItemDto: (item: V) => Promise<T>
-      ): Promise<[T[], boolean]> {
-        const records = items.values;
-        const keys: string[] = [];
-    
-        records.forEach((item) => {
-          keys.push(mapKey(item));
-        });
-
-        const dtos: T[] = []
-
-        // May need to optimize this?
-        for (const key of keys) {
-          const item = await getItem(key)
-          if (!item) {
-            // Do i need to throw an error here
-            continue;
-          }
-          dtos.push(await mapItemDto(item))
-        }
-    
-        const hasMore = items.hasMorePages;
-        return [dtos, hasMore]
-      }
 }

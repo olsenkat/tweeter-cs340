@@ -20,6 +20,7 @@ export class UserService extends Service {
   }
   
   public async getUser(token: string, alias: string): Promise<UserDto | null> {
+    console.log("Validating token in getUser: ", token);
     await this.authService.validateToken(token);
     return this.getStoredUser(alias);
   }
@@ -75,7 +76,7 @@ export class UserService extends Service {
   }
 
   public async logoutUser(token: string): Promise<void> {
-
+    console.log("Validating token in logoutUser: ", token);
     await this.authService.validateToken(token);
     await this.authService.deleteToken(token);
   }
@@ -113,5 +114,13 @@ export class UserService extends Service {
       .createAuthToken(alias, authToken.token, authToken.timestamp);
 
     return authToken.dto;
+  }
+
+  public async getUserRecord(alias: string): Promise<UserRecord | null> {
+    const userRecord = await this.daoFactory.getUserDao().getUser(alias);
+    if (!userRecord) {
+      return null;
+    }
+    return userRecord;
   }
 }

@@ -57,7 +57,12 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
   }
 
   async getAuthToken(token: string): Promise<AuthTokenRecord | null> {
+    if (token === null || token === undefined || token.length === 0) {
+      console.warn("getAuthToken called with invalid token");
+      return null;
+    }
     try {
+      console.info("getAuthToken called with token:", token);
       const query = new QueryCommand({
         KeyConditionExpression: "#tk = :token",
         ExpressionAttributeNames: { "#tk": "token" },
@@ -65,6 +70,13 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
         TableName: this.tableName,
         IndexName: this.indexName,
       });
+      console.info("Query params:", JSON.stringify({
+        TableName: this.tableName,
+        IndexName: this.indexName,
+        KeyConditionExpression: query.input.KeyConditionExpression,
+        ExpressionAttributeNames: query.input.ExpressionAttributeNames,
+        ExpressionAttributeValues: query.input.ExpressionAttributeValues,
+      }));
       const data = await this.client.send(query);
 
       if (!data.Items || data.Items.length === 0) {
@@ -78,7 +90,8 @@ export class DynamoAuthDao extends DynamoInterface implements AuthDao {
         timestamp: item.timestamp,
       };
     } catch (error) {
-      console.error("Dynamo getItem error: ", error);
+      console.error("Dynamo getAuthToken error: ", error);
+      console.error("Token: ", token);
       throw new InternalServerError("Could not get auth item: " + error);
     }
   }

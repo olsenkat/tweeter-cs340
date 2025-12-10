@@ -14,6 +14,7 @@ const followerImageUrl =
   "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/images/donald_duck.png";
 const baseFollowerFirstName = "Donald";
 const baseFollowerLastName = "Duck";
+const mainUserFullName = "Daisy" + " " + "Duck";
 
 const numbUsersToCreate = 10000;
 const numbFollowsToCreate = numbUsersToCreate;
@@ -22,6 +23,13 @@ const aliasList: string[] = Array.from(
   { length: numbUsersToCreate },
   (_, i) => baseFollowerAlias + (i + 1)
 );
+
+const nameList: string[] = Array.from(
+  { length: numbUsersToCreate },
+  (_, i) => `${baseFollowerFirstName}_${i + 1} ${baseFollowerLastName}_${i + 1}`
+);
+
+
 
 const fillUserTableDao = new FillUserTableDao();
 const fillFollowTableDao = new FillFollowTableDao();
@@ -35,11 +43,11 @@ async function main() {
   console.log("Creating follows");
   await createFollows(0);
 
-  console.log("Increasing the followee's followers count");
-//   await fillUserTableDao.increaseFollowersCount(
-//     mainUsername,
-//     numbUsersToCreate
-//   );
+  // console.log("Increasing the followee's followers count");
+  // await fillUserTableDao.increaseFollowersCount(
+  //   mainUsername,
+  //   numbUsersToCreate
+  // );
 
   console.log("Done!");
 }
@@ -81,12 +89,17 @@ function createUserList(createdUserCount: number) {
 }
 
 async function createFollows(createdFollowsCount: number) {
-  const followList = aliasList.slice(
+  const followAliasList = aliasList.slice(
     createdFollowsCount,
     createdFollowsCount + batchSize
   );
 
-  await fillFollowTableDao.createFollows(mainUsername, followList);
+  const followNameList = nameList.slice(
+    createdFollowsCount,
+    createdFollowsCount + batchSize
+  )
+
+  await fillFollowTableDao.createFollows(mainUsername, mainUserFullName, followAliasList, followNameList);
 
   createdFollowsCount += batchSize;
 

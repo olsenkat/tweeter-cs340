@@ -10,13 +10,15 @@ export class FillFollowTableDao {
   //
   // Modify these values as needed to match your follow table.
   //
-  private readonly tableName = "follow";
+  private readonly tableName = "follows";
   private readonly followerAliasAttribute = "follower_handle";
   private readonly followeeAliasAttribute = "followee_handle";
+  private readonly followerNameAttribute = "follower_name";
+  private readonly followeeNameAttribute = "followee_name";
 
   private readonly client = DynamoDBDocumentClient.from(new DynamoDBClient());
 
-  async createFollows(followeeAlias: string, followerAliasList: string[]) {
+  async createFollows(followeeAlias: string, followeeFullName: string, followerAliasList: string[], followerFullNameList: string[]) {
     if (followerAliasList.length == 0) {
       console.log("Zero followers to batch write");
       return;
@@ -25,7 +27,9 @@ export class FillFollowTableDao {
         RequestItems: {
           [this.tableName]: this.createPutFollowRequestItems(
             followeeAlias,
-            followerAliasList
+            followeeFullName,
+            followerAliasList,
+            followerFullNameList
           ),
         },
       };
@@ -43,17 +47,21 @@ export class FillFollowTableDao {
 
   private createPutFollowRequestItems(
     followeeAlias: string,
-    followerAliasList: string[]
+    followeeFullName: string,
+    followerAliasList: string[],
+    followerFullNameList: string[]
   ) {
-    return followerAliasList.map((followerAlias) =>
-      this.createPutFollowRequest(followerAlias, followeeAlias)
+    return followerAliasList.map((followerAlias, idx) =>
+      this.createPutFollowRequest(followerAlias, followerFullNameList[idx], followeeAlias, followeeFullName)
     );
   }
 
-  private createPutFollowRequest(followerAlias: string, followeeAlias: string) {
+  private createPutFollowRequest(followerAlias: string, followerFullName: string, followeeAlias: string, followeeFullName: string) {
     const item = {
       [this.followerAliasAttribute]: followerAlias,
+      [this.followerNameAttribute]: followerFullName,
       [this.followeeAliasAttribute]: followeeAlias,
+      [this.followeeNameAttribute]: followeeFullName,
     };
 
     return {

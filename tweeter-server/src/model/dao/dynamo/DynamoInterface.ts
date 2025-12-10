@@ -1,5 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
+  BatchGetCommand,
+  BatchWriteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
@@ -15,6 +17,8 @@ export interface PaginationParams<T> {
   mapItem: (item: any) => T;
   lastKey?: any;
   indexName?: string;
+
+  getLastKey?: (key: Record<any, any>) => any;
 }
 
 export abstract class DynamoInterface {
@@ -28,6 +32,9 @@ export abstract class DynamoInterface {
     this.tableName = tableName;
     this.indexName = indexName;
   }
+  // protected batch_write(params: any) {
+  //   this._dynamo.batchWriteItems(params)
+  // }
 
   protected get client() {
     return this._client;
@@ -95,13 +102,52 @@ export abstract class DynamoInterface {
       const hasMorePages = data.LastEvaluatedKey !== undefined;
 
       const items: T[] = data.Items ? data.Items.map(params.mapItem) : [];
-      const lastEvaluatedKeyHandle = data.LastEvaluatedKey
-        ? (data.LastEvaluatedKey.followee_handle as string)
+      const lastEvaluatedKeyHandle = data.LastEvaluatedKey && params.getLastKey
+        ? (params.getLastKey(data.LastEvaluatedKey))
         : undefined;
-      return new DataPage<T>(items, hasMorePages, lastEvaluatedKeyHandle);
+      return new DataPage<T, any>(items, hasMorePages, lastEvaluatedKeyHandle);
     } catch (error) {
       console.error("Dynamo getItem error: ", error);
       throw new InternalServerError("Could not get item page: " + error);
     }
+  }
+
+  async batchGetItems<T>(keys: Record<string, any>[], mapFunction: (item: any) => T): Promise<T[]> {
+    if (keys && keys.length > 0) {
+      if (!keys || keys.length === 0) {
+        return [];
+      }
+
+      const batchSize = 100
+      const batches: Record<string, any>[][] = [];
+
+      for (let j = 0; j < keys.length; j += batchSize) {
+        batches.push(keys.slice(j, j+batchSize));
+      }
+
+      const results: T[] = [];
+
+      for (const batch of batches){
+        const params = {
+        RequestItems: {
+          [this.tableName]: {
+            Keys: batch,
+          },
+        },
+      };
+      let response = await this.client.send(new BatchGetCommand(params));
+      if (response.Responses) {
+        results.push(...response.Responses[this.tableName].map(
+          (item) => mapFunction(item)
+        ))
+      }
+      }
+
+      
+
+      
+    }
+
+    return [];
   }
 }

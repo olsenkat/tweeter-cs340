@@ -67,40 +67,58 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
   }
 
   async getFollowersCount(alias: string): Promise<number> {
-    try {
-      const params: QueryCommandInput = {
-        KeyConditionExpression: "followee_handle = :followeeHandle",
-        ExpressionAttributeValues: {
-          ":followeeHandle": alias,
-        },
-        TableName: this.tableName,
-        IndexName: this.indexName,
-        Select: "COUNT",
-      };
-      const data = await this.client.send(new QueryCommand(params));
-      return data.Count ?? 0;
-    } catch (error) {
-      console.error("Dynamo getItem error: ", error);
-      throw new InternalServerError("Could not get follower count: " + error);
-    }
+    let count = 0;
+    let lastEvaluatedKey: Record<string, any> | undefined = undefined;
+
+    do {
+      try {
+        const params: QueryCommandInput = {
+          KeyConditionExpression: "followee_handle = :followeeHandle",
+          ExpressionAttributeValues: {
+            ":followeeHandle": alias,
+          },
+          TableName: this.tableName,
+          IndexName: this.indexName,
+          Select: "COUNT",
+          ExclusiveStartKey: lastEvaluatedKey
+        };
+        const data = await this.client.send(new QueryCommand(params));
+        // return data.Count ?? 0;
+        count += data.Count ?? 0;
+        lastEvaluatedKey = data.LastEvaluatedKey;
+      } catch (error) {
+        console.error("Dynamo getItem error: ", error);
+        throw new InternalServerError("Could not get follower count: " + error);
+      }
+    } while (lastEvaluatedKey);
+    return count;
   }
 
   async getFolloweesCount(alias: string): Promise<number> {
-    try {
-      const params: QueryCommandInput = {
-        KeyConditionExpression: "follower_handle = :followerHandle",
-        ExpressionAttributeValues: {
-          ":followerHandle": alias,
-        },
-        TableName: this.tableName,
-        Select: "COUNT",
-      };
-      const data = await this.client.send(new QueryCommand(params));
-      return data.Count ?? 0;
-    } catch (error) {
-      console.error("Dynamo getItem error: ", error);
-      throw new InternalServerError("Could not get followee count: " + error);
-    }
+    let count = 0;
+    let lastEvaluatedKey: Record<string, any> | undefined = undefined;
+
+    do {
+      try {
+        const params: QueryCommandInput = {
+          KeyConditionExpression: "follower_handle = :followerHandle",
+          ExpressionAttributeValues: {
+            ":followerHandle": alias,
+          },
+          TableName: this.tableName,
+          Select: "COUNT",
+          ExclusiveStartKey: lastEvaluatedKey
+        };
+        const data = await this.client.send(new QueryCommand(params));
+        count += data.Count ?? 0;
+        lastEvaluatedKey = data.LastEvaluatedKey;
+        // return data.Count ?? 0;
+      } catch (error) {
+        console.error("Dynamo getItem error: ", error);
+        throw new InternalServerError("Could not get followee count: " + error);
+      }
+    } while (lastEvaluatedKey);
+    return count;
   }
 
   async getFollowersPage(
@@ -112,7 +130,7 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
       throw new BadRequestError("User alias is required");
     }
 
-    if (!pageSize || pageSize <=0) {
+    if (!pageSize || pageSize <= 0) {
       throw new BadRequestError("Page size must be greater than 0");
     }
     try {
@@ -132,11 +150,11 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
     pageSize: number,
     lastFolloweeHandle?: string
   ): Promise<DataPage<Follows>> {
-  if (!targetUserAlias || typeof targetUserAlias !== "string") {
+    if (!targetUserAlias || typeof targetUserAlias !== "string") {
       throw new BadRequestError("User alias is required");
     }
 
-    if (!pageSize || pageSize <=0) {
+    if (!pageSize || pageSize <= 0) {
       throw new BadRequestError("Page size must be greater than 0");
     }
     try {
@@ -214,6 +232,7 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
           }
         : undefined,
       indexName: undefined,
+      getLastKey: (key) => key.followee_handle as string
     });
   }
 
@@ -241,6 +260,9 @@ export class DynamoFollowDao extends DynamoInterface implements FollowDao {
           }
         : undefined,
       indexName: this.indexName,
+      getLastKey: (key) => key.follower_handle as string
     });
   }
+
+  
 }
