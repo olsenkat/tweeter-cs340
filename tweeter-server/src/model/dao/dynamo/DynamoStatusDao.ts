@@ -30,7 +30,8 @@ export class DynamoStatusDao extends DynamoInterface {
           : undefined,
         indexName: undefined,
         getLastKey: (key) => key.timestamp as number
-      });
+      },
+    false);
     } catch (error) {
       console.error("Dynamo getItem error: ", error);
       throw new InternalServerError("Could not get status item page: " + error);

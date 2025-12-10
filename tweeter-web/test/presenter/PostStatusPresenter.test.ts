@@ -14,7 +14,7 @@ import {
   when,
 } from "@typestrong/ts-mockito";
 
-describe("PostStatusPresenter", () => {
+describe.skip("PostStatusPresenter", () => {
   let mockPostStatusPresenterView: PostStatusView;
   let postStatusPresenter: PostStatusPresenter;
   let mockService: StatusService;

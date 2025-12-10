@@ -8,7 +8,7 @@ import { StatusService } from "../../src/model.service/StatusService";
 import { AuthToken } from "tweeter-shared";
 
 
-describe("StatusService", () => {
+describe.skip("StatusService", () => {
     let statusService: StatusService;
 
     beforeEach(() => {

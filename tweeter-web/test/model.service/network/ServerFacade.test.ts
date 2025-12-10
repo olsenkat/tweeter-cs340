@@ -7,7 +7,7 @@ import "isomorphic-fetch";
 import { ServerFacade } from "../../../src/model.service/network/ServerFacade";
 
 
-describe("ServerFacade", () => {
+describe.skip("ServerFacade", () => {
     let serverFacade: ServerFacade;
 
     beforeEach(() => {

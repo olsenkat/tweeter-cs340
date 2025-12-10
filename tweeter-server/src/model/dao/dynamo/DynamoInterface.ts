@@ -82,7 +82,8 @@ export abstract class DynamoInterface {
   }
 
   protected async getPageOfItems<T>(
-    params: PaginationParams<T>
+    params: PaginationParams<T>,
+    scanIndexForward: boolean = true
   ): Promise<DataPage<T>> {
     
     if (params.pageSize <= 0) {
@@ -97,6 +98,7 @@ export abstract class DynamoInterface {
         IndexName: params.indexName,
         Limit: params.pageSize,
         ExclusiveStartKey: params.lastKey,
+        ScanIndexForward: scanIndexForward
       });
       const data = await this.client.send(query);
       const hasMorePages = data.LastEvaluatedKey !== undefined;
